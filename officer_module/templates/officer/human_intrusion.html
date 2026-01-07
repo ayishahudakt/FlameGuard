@@ -1,0 +1,47 @@
+{% extends 'officer/base.html' %}
+
+{% block title %}Human Intrusions - FLAME Guard Officer{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-person-exclamation"></i> Human Intrusion Alerts</h1>
+</div>
+
+<div class="row">
+    {% if intrusions %}
+    {% for intrusion in intrusions %}
+    <div class="col-md-6 mb-4">
+        <div
+            class="card border-{% if intrusion.status == 'NEW' %}danger{% elif intrusion.status == 'INVESTIGATING' %}warning{% else %}success{% endif %}">
+            <div class="card-header">
+                <strong>{{ intrusion.station.name }}</strong>
+                <span
+                    class="badge bg-{% if intrusion.status == 'NEW' %}danger{% elif intrusion.status == 'INVESTIGATING' %}warning{% else %}success{% endif %} float-end">
+                    {{ intrusion.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                {% if intrusion.image %}
+                <img src="{{ intrusion.image.url }}" class="img-fluid mb-3" alt="Intrusion">
+                {% endif %}
+                <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y H:i" }}</p>
+                <p><strong>Location:</strong> {{ intrusion.location_details|default:"N/A" }}</p>
+                {% if intrusion.notes %}
+                <p><strong>Notes:</strong> {{ intrusion.notes }}</p>
+                {% endif %}
+                {% if intrusion.status == 'NEW' or intrusion.status == 'INVESTIGATING' %}
+                <a href="{% url 'update_intrusion_status' intrusion.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil"></i> Update Status
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12">
+        <p class="text-center text-muted">No intrusion alerts for your station.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

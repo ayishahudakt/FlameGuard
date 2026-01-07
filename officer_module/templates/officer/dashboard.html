@@ -1,0 +1,174 @@
+{% extends 'officer/base.html' %}
+
+{% block title %}Dashboard - FLAME Guard Officer{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-speedometer2"></i> Officer Dashboard</h1>
+</div>
+
+<!-- Officer Info -->
+{% if officer_profile %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="bi bi-person-badge"></i> {{ request.user.username }}</h5>
+                <p class="mb-1"><strong>Designation:</strong> {{ officer_profile.designation }}</p>
+                <p class="mb-1"><strong>Badge:</strong> {{ officer_profile.badge_number|default:"N/A" }}</p>
+            </div>
+            <div class="col-md-6">
+                {% if station %}
+                <p class="mb-1"><strong>Station:</strong> {{ station.name }}</p>
+                <p class="mb-1"><strong>Division:</strong> {{ station.division.name }}</p>
+                <p class="mb-1"><strong>Contact:</strong> {{ station.contact_number }}</p>
+                {% else %}
+                <p class="text-muted">No station assigned</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistics -->
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Pending Complaints</p>
+                        <h3 class="mb-0">{{ pending_complaints }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-chat-left-text" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Unread Notifications</p>
+                        <h3 class="mb-0">{{ unread_notifications }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-bell" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Active Fire Alerts</p>
+                        <h3 class="mb-0">{{ active_fire_alerts }}</h3>
+                    </div>
+                    <div class="text-danger">
+                        <i class="bi bi-fire" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">New Intrusions</p>
+                        <h3 class="mb-0">{{ new_intrusions }}</h3>
+                    </div>
+                    <div class="text-danger">
+                        <i class="bi bi-person-exclamation" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bell"></i> Recent Notifications
+            </div>
+            <div class="card-body">
+                {% if recent_notifications %}
+                <div class="list-group list-group-flush">
+                    {% for notification in recent_notifications %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ notification.title }}</h6>
+                            <small class="text-muted">{{ notification.created_at|date:"M d" }}</small>
+                        </div>
+                        <p class="mb-1 small">{{ notification.message|truncatewords:15 }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'view_officer_notifications' %}" class="btn btn-sm btn-outline-primary mt-2">View
+                    All</a>
+                {% else %}
+                <p class="text-muted text-center mb-0">No notifications</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-fire"></i> Recent Fire Alerts
+            </div>
+            <div class="card-body">
+                {% if recent_fire_alerts %}
+                <div class="list-group list-group-flush">
+                    {% for alert in recent_fire_alerts %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ alert.station.name }}</h6>
+                            <span class="badge bg-{{ alert.severity|lower }}">{{ alert.severity }}</span>
+                        </div>
+                        <small class="text-muted">{{ alert.detected_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'view_fire_alerts_officer' %}" class="btn btn-sm btn-outline-danger mt-2">View All</a>
+                {% else %}
+                <p class="text-muted text-center mb-0">No fire alerts</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-low {
+        background-color: #28a745 !important;
+    }
+
+    .bg-medium {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-high {
+        background-color: #fd7e14 !important;
+    }
+
+    .bg-critical {
+        background-color: #dc3545 !important;
+    }
+</style>
+{% endblock %}
