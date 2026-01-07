@@ -1,0 +1,65 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Add Preserved Animal - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-plus-circle"></i> Add Preserved Animal</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="animal" class="form-label">Select Animal *</label>
+                        <select class="form-select" id="animal" name="animal" required>
+                            <option value="">Choose an animal</option>
+                            {% for animal in animals %}
+                            <option value="{{ animal.pk }}">{{ animal.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="preservation_status" class="form-label">Preservation Status *</label>
+                        <select class="form-select" id="preservation_status" name="preservation_status" required>
+                            <option value="ENDANGERED">Endangered</option>
+                            <option value="VULNERABLE">Vulnerable</option>
+                            <option value="CRITICALLY_ENDANGERED">Critically Endangered</option>
+                            <option value="PROTECTED">Protected</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="threat_level" class="form-label">Threat Level *</label>
+                        <select class="form-select" id="threat_level" name="threat_level" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="population_estimate" class="form-label">Population Estimate</label>
+                        <input type="number" class="form-control" id="population_estimate" name="population_estimate">
+                    </div>
+                    <div class="mb-3">
+                        <label for="conservation_notes" class="form-label">Conservation Notes</label>
+                        <textarea class="form-control" id="conservation_notes" name="conservation_notes"
+                            rows="4"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save
+                        </button>
+                        <a href="{% url 'manage_preserved_animals' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

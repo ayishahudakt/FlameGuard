@@ -1,0 +1,44 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Reply to Complaint - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-reply"></i> Reply to Complaint</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">Original Complaint</div>
+            <div class="card-body">
+                <h5>{{ complaint.subject }}</h5>
+                <p class="text-muted">From: {{ complaint.sender.username }} | {{ complaint.created_at|date:"M d, Y H:i"
+                    }}</p>
+                <p>{{ complaint.message }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Your Reply</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="reply" class="form-label">Reply Message *</label>
+                        <textarea class="form-control" id="reply" name="reply" rows="5" required></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Send Reply
+                        </button>
+                        <a href="{% url 'view_complaints' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

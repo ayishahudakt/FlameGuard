@@ -1,0 +1,204 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Dashboard - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-calendar"></i> Today
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Forest Divisions</p>
+                        <h3 class="mb-0">{{ total_divisions }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="bi bi-tree" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Forest Stations</p>
+                        <h3 class="mb-0">{{ total_stations }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-building" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Forest Officers</p>
+                        <h3 class="mb-0">{{ total_officers }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-people" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1">Active Fire Alerts</p>
+                        <h3 class="mb-0">{{ active_fire_alerts }}</h3>
+                    </div>
+                    <div class="text-danger">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-bug text-info" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_animals }}</h4>
+                <p class="text-muted mb-0">Total Animals</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-shield-check text-success" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ total_preserved }}</h4>
+                <p class="text-muted mb-0">Preserved Animals</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-chat-left-text text-warning" style="font-size: 2.5rem;"></i>
+                <h4 class="mt-2">{{ pending_complaints }}</h4>
+                <p class="text-muted mb-0">Pending Complaints</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-file-text"></i> Recent Reports
+            </div>
+            <div class="card-body">
+                {% if recent_reports %}
+                <div class="list-group list-group-flush">
+                    {% for report in recent_reports %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ report.title }}</h6>
+                            <small class="text-muted">{{ report.submitted_at|date:"M d, Y" }}</small>
+                        </div>
+                        <small class="text-muted">By: {{ report.officer.username }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No recent reports</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-exclamation-triangle"></i> Recent Fire Alerts
+            </div>
+            <div class="card-body">
+                {% if recent_alerts %}
+                <div class="list-group list-group-flush">
+                    {% for alert in recent_alerts %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ alert.station.name }}</h6>
+                            <span class="badge bg-{{ alert.severity|lower }}">{{ alert.severity }}</span>
+                        </div>
+                        <small class="text-muted">{{ alert.detected_at|date:"M d, Y H:i" }}</small>
+                        <br>
+                        <span class="badge bg-{{ alert.status|lower }} mt-1">{{ alert.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No recent fire alerts</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-low {
+        background-color: #28a745 !important;
+    }
+
+    .bg-medium {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-high {
+        background-color: #fd7e14 !important;
+    }
+
+    .bg-critical {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-active {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-investigating {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-contained {
+        background-color: #17a2b8 !important;
+    }
+
+    .bg-resolved {
+        background-color: #28a745 !important;
+    }
+</style>
+{% endblock %}

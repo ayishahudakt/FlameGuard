@@ -1,0 +1,62 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Forest Officers - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-people"></i> Forest Officers</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'add_officer' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Officer
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if officers %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Designation</th>
+                        <th>Station</th>
+                        <th>Badge Number</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for officer in officers %}
+                    <tr>
+                        <td><strong>{{ officer.user.username }}</strong></td>
+                        <td>{{ officer.user.email }}</td>
+                        <td>{{ officer.user.phone_number|default:"N/A" }}</td>
+                        <td>{{ officer.designation }}</td>
+                        <td>
+                            {% if officer.station %}
+                            <span class="badge bg-success">{{ officer.station.name }}</span>
+                            {% else %}
+                            <span class="badge bg-warning">Not Allocated</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ officer.badge_number|default:"N/A" }}</td>
+                        <td>
+                            <a href="{% url 'allocate_officer' officer.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-geo-alt"></i> Allocate
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No forest officers found. <a href="{% url 'add_officer' %}">Add one now</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

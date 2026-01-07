@@ -1,0 +1,48 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Fire Alerts - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-exclamation-triangle"></i> Fire Alerts</h1>
+</div>
+
+<div class="row">
+    {% if alerts %}
+    {% for alert in alerts %}
+    <div class="col-md-6 mb-4">
+        <div
+            class="card border-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %}">
+            <div
+                class="card-header bg-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %} text-white">
+                <strong>{{ alert.station.name }}</strong>
+                <span class="badge bg-light text-dark float-end">{{ alert.get_severity_display }}</span>
+            </div>
+            <div class="card-body">
+                {% if alert.image %}
+                <img src="{{ alert.image.url }}" class="img-fluid mb-3" alt="Fire Alert">
+                {% endif %}
+                <p><strong>Detected:</strong> {{ alert.detected_at|date:"M d, Y H:i" }}</p>
+                <p><strong>Location:</strong> {{ alert.location_details|default:"N/A" }}</p>
+                <p><strong>Status:</strong>
+                    <span
+                        class="badge bg-{% if alert.status == 'ACTIVE' %}danger{% elif alert.status == 'INVESTIGATING' %}warning{% elif alert.status == 'CONTAINED' %}info{% else %}success{% endif %}">
+                        {{ alert.get_status_display }}
+                    </span>
+                </p>
+                {% if alert.status != 'RESOLVED' %}
+                <a href="{% url 'update_fire_alert' alert.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil"></i> Update Status
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12">
+        <p class="text-center text-muted">No fire alerts found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
