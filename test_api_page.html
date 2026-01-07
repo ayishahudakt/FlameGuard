@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLAME Guard - API Testing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 100px;
+        }
+
+        .api-title {
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="text-white">🔥 FLAME Guard - API Testing</h1>
+            <p class="text-white">Test all three AI detection APIs</p>
+        </div>
+
+        <!-- Fire Detection API -->
+        <div class="test-card">
+            <h3 class="api-title">🔥 Fire Detection API</h3>
+            <form id="fireForm">
+                <div class="mb-3">
+                    <label class="form-label">Upload Image:</label>
+                    <input type="file" class="form-control" id="fireImage" accept="image/*" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Station ID (optional):</label>
+                    <input type="number" class="form-control" id="fireStation" value="1">
+                </div>
+                <button type="submit" class="btn btn-danger">Test Fire Detection</button>
+            </form>
+            <div class="result-box" id="fireResult">
+                <strong>Result will appear here...</strong>
+            </div>
+        </div>
+
+        <!-- Animal Detection API -->
+        <div class="test-card">
+            <h3 class="api-title">🐅 Animal Detection API</h3>
+            <form id="animalForm">
+                <div class="mb-3">
+                    <label class="form-label">Upload Image:</label>
+                    <input type="file" class="form-control" id="animalImage" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-success">Test Animal Detection</button>
+            </form>
+            <div class="result-box" id="animalResult">
+                <strong>Result will appear here...</strong>
+            </div>
+        </div>
+
+        <!-- Human Detection API -->
+        <div class="test-card">
+            <h3 class="api-title">🚶 Human Detection API</h3>
+            <form id="humanForm">
+                <div class="mb-3">
+                    <label class="form-label">Upload Image:</label>
+                    <input type="file" class="form-control" id="humanImage" accept="image/*" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Station ID (optional):</label>
+                    <input type="number" class="form-control" id="humanStation" value="1">
+                </div>
+                <button type="submit" class="btn btn-primary">Test Human Detection</button>
+            </form>
+            <div class="result-box" id="humanResult">
+                <strong>Result will appear here...</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fire Detection
+        document.getElementById('fireForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('fireResult');
+            resultDiv.innerHTML = '<div class="spinner-border" role="status"></div> Testing...';
+
+            const formData = new FormData();
+            formData.append('image', document.getElementById('fireImage').files[0]);
+            formData.append('station_id', document.getElementById('fireStation').value);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/camera/detect-fire/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Animal Detection
+        document.getElementById('animalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('animalResult');
+            resultDiv.innerHTML = '<div class="spinner-border" role="status"></div> Testing...';
+
+            const formData = new FormData();
+            formData.append('image', document.getElementById('animalImage').files[0]);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/camera/detect-animal/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Human Detection
+        document.getElementById('humanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('humanResult');
+            resultDiv.innerHTML = '<div class="spinner-border" role="status"></div> Testing...';
+
+            const formData = new FormData();
+            formData.append('image', document.getElementById('humanImage').files[0]);
+            formData.append('station_id', document.getElementById('humanStation').value);
+
+            try {
+                const response = await fetch('http://localhost:8000/api/camera/detect-human/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+
+</html>
