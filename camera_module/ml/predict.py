@@ -7,6 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import cv2
 
 # Model paths
 FIRE_MODEL_PATH = 'camera_module/models/fire_detection_model.h5'
@@ -56,26 +57,36 @@ def preprocess_image(image_path_or_file):
     Preprocess image for model prediction
     
     Args:
-        image_path_or_file: Path to image file or file object
+        image_path_or_file: Path to image file, file object, or numpy array
     
     Returns:
         Preprocessed image array
     """
     try:
-        # Load image
-        if isinstance(image_path_or_file, str):
-            img = Image.open(image_path_or_file)
+        # Check if it's already a numpy array (from OpenCV)
+        if isinstance(image_path_or_file, np.ndarray):
+            img_array = image_path_or_file
+            # Convert BGR to RGB (OpenCV uses BGR)
+            img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
         else:
-            img = Image.open(image_path_or_file)
+            # Load image from file
+            if isinstance(image_path_or_file, str):
+                img = Image.open(image_path_or_file)
+            else:
+                img = Image.open(image_path_or_file)
+            
+            # Convert to RGB
+            img = img.convert('RGB')
+            
+            # Resize
+            img = img.resize((IMG_SIZE, IMG_SIZE))
+            
+            # Convert to array
+            img_array = np.array(img)
         
-        # Convert to RGB
-        img = img.convert('RGB')
-        
-        # Resize
-        img = img.resize((IMG_SIZE, IMG_SIZE))
-        
-        # Convert to array
-        img_array = np.array(img)
+        # Resize if needed
+        if img_array.shape[:2] != (IMG_SIZE, IMG_SIZE):
+            img_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
         
         # Normalize (0-1 range)
         img_array = img_array / 255.0
