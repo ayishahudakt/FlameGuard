@@ -2,33 +2,269 @@
 
 {% block title %}Send Complaint - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-chat-left-text"></i> Send Complaint to Admin</h1>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-secondary: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Gradient Header */
+    .page-header {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #7c3aed;
+    }
+
+    /* Modern Glassmorphism Card */
+    .modern-form-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        box-shadow: var(--shadow-soft);
+        padding: 2.5rem;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.9s ease-out;
+    }
+
+    .modern-form-card:hover {
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Modern Form Labels */
+    .modern-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Modern Form Inputs */
+    .modern-input,
+    .modern-textarea {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: rgba(248, 250, 252, 0.5);
+    }
+
+    .modern-input:focus,
+    .modern-textarea:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background: #ffffff;
+        outline: none;
+    }
+
+    .modern-textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+
+    /* Form Helper Text */
+    .modern-helper-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    /* Modern Buttons */
+    .modern-btn {
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modern-btn i {
+        font-size: 1.1rem;
+    }
+
+    .modern-btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+        color: white;
+    }
+
+    .modern-btn-secondary {
+        background: var(--gradient-secondary);
+        color: white;
+    }
+
+    .modern-btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(100, 116, 139, 0.3);
+        color: white;
+    }
+
+    /* Button Group */
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    /* Form Group Spacing */
+    .modern-form-group {
+        margin-bottom: 1.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .modern-form-card {
+            padding: 1.5rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .modern-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Input Animation */
+    @keyframes inputFocus {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.01);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .modern-input:focus,
+    .modern-textarea:focus {
+        animation: inputFocus 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Modern Header -->
+    <h1 class="page-header">
+        <i class="bi bi-chat-left-text"></i> Send Complaint to Admin
+    </h1>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Modern Glassmorphism Form Card -->
+            <div class="modern-form-card">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="subject" class="form-label">Subject *</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required
-                            pattern="[A-Za-z\s]+" title="Subject must contain only letters and spaces.">
-                        <div class="form-text">Only alphabets and spaces are allowed.</div>
+
+                    <!-- Subject Field -->
+                    <div class="modern-form-group">
+                        <label for="subject" class="modern-label">
+                            Subject <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" class="form-control modern-input" id="subject" name="subject" required
+                            pattern="[A-Za-z\s]+" title="Subject must contain only letters and spaces."
+                            placeholder="Enter complaint subject...">
+                        <div class="modern-helper-text">
+                            <i class="bi bi-info-circle"></i> Only alphabets and spaces are allowed.
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message *</label>
-                        <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+
+                    <!-- Message Field -->
+                    <div class="modern-form-group">
+                        <label for="message" class="modern-label">
+                            Message <span style="color: #ef4444;">*</span>
+                        </label>
+                        <textarea class="form-control modern-textarea" id="message" name="message" rows="6" required
+                            placeholder="Describe your complaint in detail..."></textarea>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send"></i> Send Complaint
+
+                    <!-- Action Buttons -->
+                    <div class="button-group">
+                        <button type="submit" class="btn modern-btn modern-btn-primary">
+                            <i class="bi bi-send-fill"></i>
+                            Send Complaint
                         </button>
-                        <a href="{% url 'officer_dashboard' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
+                        <a href="{% url 'officer_dashboard' %}" class="btn modern-btn modern-btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                            Cancel
                         </a>
                     </div>
                 </form>
