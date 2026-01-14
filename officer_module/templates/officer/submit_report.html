@@ -232,7 +232,12 @@
                             Report Title <span style="color: #ef4444;">*</span>
                         </label>
                         <input type="text" class="form-control modern-input" id="title" name="title"
+                            pattern="[A-Za-z\s]+" title="Report title must contain only letters and spaces."
                             placeholder="e.g., Daily Patrol Report" required>
+                        <div class="modern-helper-text"
+                            style="color: #64748b; font-size: 0.85rem; margin-top: 0.5rem; font-style: italic;">
+                            <i class="bi bi-info-circle"></i> Only alphabets and spaces are allowed.
+                        </div>
                     </div>
 
                     <!-- Report Content Field -->
@@ -260,4 +265,57 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Real-time validation for report title field - only allow alphabets and spaces
+    document.addEventListener('DOMContentLoaded', function () {
+        const titleInput = document.getElementById('title');
+
+        if (titleInput) {
+            // Prevent typing numbers and special characters
+            titleInput.addEventListener('keypress', function (e) {
+                const char = String.fromCharCode(e.which);
+                // Allow only alphabets (a-z, A-Z) and space
+                if (!/[a-zA-Z\s]/.test(char)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Handle paste events to remove invalid characters
+            titleInput.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                // Remove all characters except alphabets and spaces
+                const cleanedText = pastedText.replace(/[^a-zA-Z\s]/g, '');
+
+                // Insert cleaned text at cursor position
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const currentValue = this.value;
+                this.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+
+                // Set cursor position after inserted text
+                const newPosition = start + cleanedText.length;
+                this.setSelectionRange(newPosition, newPosition);
+            });
+
+            // Also clean on input (catches any other input methods)
+            titleInput.addEventListener('input', function (e) {
+                const cursorPosition = this.selectionStart;
+                const originalLength = this.value.length;
+
+                // Remove invalid characters
+                this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+
+                // Adjust cursor position if characters were removed
+                const newLength = this.value.length;
+                const diff = originalLength - newLength;
+                if (diff > 0) {
+                    this.setSelectionRange(cursorPosition - diff, cursorPosition - diff);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -2,33 +2,300 @@
 
 {% block title %}Notifications - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-bell"></i> Notifications from Admin</h1>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="card">
-    <div class="card-body">
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-notification: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Gradient Header */
+    .page-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #f59e0b;
+        animation: ring 2s ease-in-out infinite;
+    }
+
+    @keyframes ring {
+
+        0%,
+        100% {
+            transform: rotate(0deg);
+        }
+
+        10%,
+        30% {
+            transform: rotate(-10deg);
+        }
+
+        20%,
+        40% {
+            transform: rotate(10deg);
+        }
+
+        50% {
+            transform: rotate(0deg);
+        }
+    }
+
+    /* Notification Card */
+    .notification-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.9s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .notification-card.unread {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .notification-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .notification-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .notification-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .notification-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .notification-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .notification-card:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+    .notification-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Notification Header */
+    .notification-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .notification-title {
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .new-badge {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+    }
+
+    .notification-date {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Notification Body */
+    .notification-body {
+        padding: 1.75rem;
+    }
+
+    .notification-message {
+        color: #1e293b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .notification-from {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .notification-from i {
+        color: #7c3aed;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #94a3b8;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+        color: #f59e0b;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .notification-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .notification-date {
+            align-self: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Notifications Header -->
+    <h1 class="page-header">
+        <i class="bi bi-bell"></i> Notifications from Admin
+    </h1>
+
+    <!-- Notifications List -->
+    <div>
         {% if notifications %}
         {% for notification in notifications %}
-        <div class="card mb-3 {% if not notification.is_read %}border-primary{% endif %}">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ notification.title }}</strong>
+        <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+            <!-- Notification Header -->
+            <div class="notification-header">
+                <div class="notification-title">
+                    {{ notification.title }}
                     {% if not notification.is_read %}
-                    <span class="badge badge-new ms-2">NEW</span>
+                    <span class="new-badge">NEW</span>
                     {% endif %}
                 </div>
-                <small class="text-muted">{{ notification.created_at|date:"M d, Y H:i" }}</small>
+                <span class="notification-date">{{ notification.created_at|date:"M d, Y H:i" }}</span>
             </div>
-            <div class="card-body">
-                <p class="mb-0">{{ notification.message }}</p>
-                <small class="text-muted">From: {{ notification.from_admin.username }}</small>
+
+            <!-- Notification Body -->
+            <div class="notification-body">
+                <p class="notification-message">{{ notification.message }}</p>
+                <div class="notification-from">
+                    <i class="bi bi-person-circle"></i>
+                    <span>From: {{ notification.from_admin.username }}</span>
+                </div>
             </div>
         </div>
         {% endfor %}
         {% else %}
-        <p class="text-center text-muted">No notifications found.</p>
+        <div class="empty-state">
+            <i class="bi bi-bell-slash"></i>
+            <p>No notifications found.</p>
+        </div>
         {% endif %}
     </div>
 </div>

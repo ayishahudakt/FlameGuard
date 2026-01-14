@@ -272,4 +272,57 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Real-time validation for subject field - only allow alphabets and spaces
+    document.addEventListener('DOMContentLoaded', function () {
+        const subjectInput = document.getElementById('subject');
+
+        if (subjectInput) {
+            // Prevent typing numbers and special characters
+            subjectInput.addEventListener('keypress', function (e) {
+                const char = String.fromCharCode(e.which);
+                // Allow only alphabets (a-z, A-Z) and space
+                if (!/[a-zA-Z\s]/.test(char)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Handle paste events to remove invalid characters
+            subjectInput.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                // Remove all characters except alphabets and spaces
+                const cleanedText = pastedText.replace(/[^a-zA-Z\s]/g, '');
+
+                // Insert cleaned text at cursor position
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const currentValue = this.value;
+                this.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+
+                // Set cursor position after inserted text
+                const newPosition = start + cleanedText.length;
+                this.setSelectionRange(newPosition, newPosition);
+            });
+
+            // Also clean on input (catches any other input methods)
+            subjectInput.addEventListener('input', function (e) {
+                const cursorPosition = this.selectionStart;
+                const originalLength = this.value.length;
+
+                // Remove invalid characters
+                this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+
+                // Adjust cursor position if characters were removed
+                const newLength = this.value.length;
+                const diff = originalLength - newLength;
+                if (diff > 0) {
+                    this.setSelectionRange(cursorPosition - diff, cursorPosition - diff);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

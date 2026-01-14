@@ -2,49 +2,381 @@
 
 {% block title %}Animal Detection - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-bug"></i> Animal Detection Alerts</h1>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="row">
-    {% if alerts %}
-    {% for alert in alerts %}
-    <div class="col-md-6 mb-4">
-        <div
-            class="card border-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %}">
-            <div
-                class="card-header bg-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %} text-white">
-                <strong>{{ alert.animal_type }}</strong>
-                <span class="badge bg-light text-dark float-end">{{ alert.get_severity_display }}</span>
-            </div>
-            <div class="card-body">
-                {% if alert.image %}
-                <img src="{{ alert.image.url }}" class="img-fluid mb-3" alt="Animal Alert">
-                {% endif %}
-                <p><strong>Detected:</strong> {{ alert.detected_at|date:"M d, Y H:i" }}</p>
-                <p><strong>Location:</strong> {{ alert.location_details|default:"N/A" }}</p>
-                <p><strong>Confidence:</strong> {{ alert.confidence_score|floatformat:2 }}%</p>
-                <p><strong>Status:</strong>
-                    <span
-                        class="badge bg-{% if alert.status == 'NEW' %}danger{% elif alert.status == 'ACKNOWLEDGED' %}warning{% elif alert.status == 'INVESTIGATING' %}info{% else %}success{% endif %}">
-                        {{ alert.get_status_display }}
-                    </span>
-                    </span>
-                </p>
-                {% if alert.status != 'RESOLVED' %}
-                <a href="{% url 'update_animal_alert_status' alert.id %}" class="btn btn-sm btn-outline-primary mt-2">
-                    <i class="bi bi-pencil-square"></i> Update Status
-                </a>
-                {% endif %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-critical: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        --gradient-high: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-medium: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --gradient-low: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Gradient Header */
+    .page-header {
+        background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #10b981;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+    }
+
+    /* Animal Alert Card */
+    .animal-alert-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.9s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .animal-alert-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .animal-alert-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .animal-alert-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .animal-alert-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .animal-alert-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .animal-alert-card:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+    .animal-alert-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Alert Header */
+    .alert-header {
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .alert-header-critical {
+        background: var(--gradient-critical);
+    }
+
+    .alert-header-high {
+        background: var(--gradient-high);
+    }
+
+    .alert-header-medium {
+        background: var(--gradient-medium);
+    }
+
+    .alert-header-low {
+        background: var(--gradient-low);
+    }
+
+    .alert-animal-name {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .severity-badge {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Alert Body */
+    .alert-body {
+        padding: 1.75rem;
+    }
+
+    .alert-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-info {
+        margin-bottom: 1rem;
+    }
+
+    .alert-info-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .alert-info-value {
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    /* Confidence Badge */
+    .confidence-badge {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+    }
+
+    .status-new {
+        background: var(--gradient-critical);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-acknowledged {
+        background: var(--gradient-high);
+    }
+
+    .status-investigating {
+        background: var(--gradient-medium);
+    }
+
+    .status-resolved {
+        background: var(--gradient-low);
+    }
+
+    /* Update Button */
+    .modern-update-btn {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+        color: #7c3aed;
+        border: 2px solid #7c3aed;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        text-decoration: none;
+    }
+
+    .modern-update-btn:hover {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #94a3b8;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+        color: #10b981;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .alert-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .severity-badge {
+            align-self: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Animal Detection Header -->
+    <h1 class="page-header">
+        <i class="bi bi-bug"></i> Animal Detection Alerts
+    </h1>
+
+    <!-- Alerts Grid -->
+    <div class="row">
+        {% if alerts %}
+        {% for alert in alerts %}
+        <div class="col-md-6 mb-4">
+            <div class="animal-alert-card">
+                <!-- Alert Header -->
+                <div
+                    class="alert-header alert-header-{% if alert.severity == 'CRITICAL' %}critical{% elif alert.severity == 'HIGH' %}high{% elif alert.severity == 'MEDIUM' %}medium{% else %}low{% endif %}">
+                    <h3 class="alert-animal-name">{{ alert.animal_type }}</h3>
+                    <span class="severity-badge">{{ alert.get_severity_display }}</span>
+                </div>
+
+                <!-- Alert Body -->
+                <div class="alert-body">
+                    {% if alert.image %}
+                    <img src="{{ alert.image.url }}" class="alert-image" alt="Animal Alert Image">
+                    {% endif %}
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Detected:</span>
+                        <span class="alert-info-value">{{ alert.detected_at|date:"M d, Y H:i" }}</span>
+                    </div>
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Location:</span>
+                        <span class="alert-info-value">{{ alert.location_details|default:"N/A" }}</span>
+                    </div>
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Confidence:</span>
+                        <span class="confidence-badge">{{ alert.confidence_score|floatformat:2 }}%</span>
+                    </div>
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Status:</span>
+                        <span
+                            class="status-badge status-{% if alert.status == 'NEW' %}new{% elif alert.status == 'ACKNOWLEDGED' %}acknowledged{% elif alert.status == 'INVESTIGATING' %}investigating{% else %}resolved{% endif %}">
+                            {{ alert.get_status_display }}
+                        </span>
+                    </div>
+
+                    {% if alert.status != 'RESOLVED' %}
+                    <a href="{% url 'update_animal_alert_status' alert.id %}" class="modern-update-btn">
+                        <i class="bi bi-pencil-square"></i>
+                        Update Status
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-bug"></i>
+                <p>No animal detection alerts found.</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="col-12">
-        <p class="text-center text-muted">No animal detection alerts found.</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

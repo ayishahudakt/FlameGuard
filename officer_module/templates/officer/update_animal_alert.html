@@ -2,87 +2,400 @@
 
 {% block title %}Update Animal Alert - FLAME Guard Officer{% endblock %}
 
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
+
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-critical: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        --gradient-high: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-medium: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --gradient-low: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-secondary: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Gradient Header */
+    .page-header {
+        background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #10b981;
+    }
+
+    /* Glassmorphism Cards */
+    .modern-info-card,
+    .modern-form-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .modern-info-card {
+        animation: fadeInUp 0.9s ease-out;
+    }
+
+    .modern-form-card {
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .modern-info-card:hover,
+    .modern-form-card:hover {
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Card Headers */
+    .modern-card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Card Body */
+    .modern-card-body {
+        padding: 2rem;
+    }
+
+    .info-item {
+        margin-bottom: 1.25rem;
+    }
+
+    .info-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
+        margin-right: 0.5rem;
+    }
+
+    .info-value {
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    /* Severity Badges */
+    .severity-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+    }
+
+    .severity-critical {
+        background: var(--gradient-critical);
+    }
+
+    .severity-high {
+        background: var(--gradient-high);
+    }
+
+    .severity-medium {
+        background: var(--gradient-medium);
+    }
+
+    .severity-low {
+        background: var(--gradient-low);
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+    }
+
+    .status-new {
+        background: var(--gradient-critical);
+    }
+
+    .status-acknowledged {
+        background: var(--gradient-high);
+    }
+
+    .status-investigating {
+        background: var(--gradient-medium);
+    }
+
+    .status-resolved {
+        background: var(--gradient-low);
+    }
+
+    /* Confidence Badge */
+    .confidence-badge {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    /* Modern Form Elements */
+    .modern-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modern-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: rgba(248, 250, 252, 0.5);
+    }
+
+    .modern-select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background: #ffffff;
+        outline: none;
+    }
+
+    /* Helper Text */
+    .modern-helper-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+        border-left: 3px solid #7c3aed;
+        border-radius: 8px;
+    }
+
+    .modern-helper-text i {
+        color: #7c3aed;
+        margin-right: 0.5rem;
+    }
+
+    /* Modern Buttons */
+    .modern-btn {
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modern-btn i {
+        font-size: 1.1rem;
+    }
+
+    .modern-btn-success {
+        background: var(--gradient-success);
+        color: white;
+    }
+
+    .modern-btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+
+    .modern-btn-secondary {
+        background: var(--gradient-secondary);
+        color: white;
+    }
+
+    .modern-btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(100, 116, 139, 0.3);
+        color: white;
+    }
+
+    /* Button Group */
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .modern-card-body {
+            padding: 1.5rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .modern-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-pencil"></i> Update Animal Alert Status</h1>
-</div>
+<div class="page-container">
+    <!-- Header -->
+    <h1 class="page-header">
+        <i class="bi bi-pencil"></i> Update Animal Alert Status
+    </h1>
 
-<div class="row">
-    <div class="col-md-8">
-        
-        <!-- Alert Details -->
-        <div class="card mb-3">
-            <div class="card-header">Alert Details</div>
-            <div class="card-body">
-                <p><strong>Station:</strong> {{ alert.station.name }}</p>
-                <p><strong>Animal:</strong> {{ alert.animal_type }}</p>
-
-                <p>
-                    <strong>Severity:</strong>
-                    <span class="badge bg-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %}">
-                        {{ alert.get_severity_display }}
-                    </span>
-                </p>
-
-                <p><strong>Detected:</strong> {{ alert.detected_at|date:"M d, Y H:i" }}</p>
-
-                <p>
-                    <strong>Current Status:</strong>
-                    <span class="badge bg-{% if alert.status == 'NEW' %}danger{% elif alert.status == 'ACKNOWLEDGED' %}warning{% elif alert.status == 'INVESTIGATING' %}info{% else %}success{% endif %}">
-                        {{ alert.get_status_display }}
-                    </span>
-                </p>
-
-                <p><strong>Confidence:</strong> {{ alert.confidence_score|floatformat:2 }}%</p>
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Alert Details Card -->
+            <div class="modern-info-card">
+                <div class="modern-card-header">
+                    <i class="bi bi-info-circle"></i> Alert Details
+                </div>
+                <div class="modern-card-body">
+                    <div class="info-item">
+                        <span class="info-label">Station:</span>
+                        <span class="info-value">{{ alert.station.name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Animal:</span>
+                        <span class="info-value">{{ alert.animal_type }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Severity:</span>
+                        <span
+                            class="severity-badge severity-{% if alert.severity == 'CRITICAL' %}critical{% elif alert.severity == 'HIGH' %}high{% elif alert.severity == 'MEDIUM' %}medium{% else %}low{% endif %}">
+                            {{ alert.get_severity_display }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Detected:</span>
+                        <span class="info-value">{{ alert.detected_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Status:</span>
+                        <span
+                            class="status-badge status-{% if alert.status == 'NEW' %}new{% elif alert.status == 'ACKNOWLEDGED' %}acknowledged{% elif alert.status == 'INVESTIGATING' %}investigating{% else %}resolved{% endif %}">
+                            {{ alert.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Confidence:</span>
+                        <span class="confidence-badge">{{ alert.confidence_score|floatformat:2 }}%</span>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Update Status -->
-        <div class="card">
-            <div class="card-header">Update Status</div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-
-                    <div class="mb-3">
-                        <label for="status" class="form-label">New Status *</label>
-
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="NEW" {% if alert.status == 'NEW' %}selected{% endif %}>New</option>
-
-                            <option value="ACKNOWLEDGED" {% if alert.status == 'ACKNOWLEDGED' %}selected{% endif %}>
-                                Acknowledged
-                            </option>
-
-                            <option value="INVESTIGATING" {% if alert.status == 'INVESTIGATING' %}selected{% endif %}>
-                                Investigating
-                            </option>
-
-                            <option value="RESOLVED" {% if alert.status == 'RESOLVED' %}selected{% endif %}>
-                                Resolved
-                            </option>
-                        </select>
-
-                        <div class="form-text mt-2">
-                            <i class="bi bi-info-circle"></i>
-                            Selecting <strong>Resolved</strong> will mark the alert as closed.
+            <!-- Update Status Form Card -->
+            <div class="modern-form-card">
+                <div class="modern-card-header">
+                    <i class="bi bi-pencil-square"></i> Update Status
+                </div>
+                <div class="modern-card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="status" class="modern-label">
+                                New Status <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select class="form-select modern-select" id="status" name="status" required>
+                                <option value="NEW" {% if alert.status == 'NEW' %}selected{% endif %}>New</option>
+                                <option value="ACKNOWLEDGED" {% if alert.status == 'ACKNOWLEDGED' %}selected{% endif %}>
+                                    Acknowledged</option>
+                                <option value="INVESTIGATING" {% if alert.status == 'INVESTIGATING' %}selected{% endif %}>
+                                    Investigating</option>
+                                <option value="RESOLVED" {% if alert.status == 'RESOLVED' %}selected{% endif %}>Resolved
+                                </option>
+                            </select>
+                            <div class="modern-helper-text">
+                                <i class="bi bi-info-circle-fill"></i> Selecting <strong>Resolved</strong> will mark the
+                                alert as closed.
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Update Status
-                        </button>
-
-                        <a href="{% url 'view_animal_alerts' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
-                    </div>
-
-                </form>
+                        <div class="button-group">
+                            <button type="submit" class="btn modern-btn modern-btn-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Update Status
+                            </button>
+                            <a href="{% url 'view_animal_alerts' %}" class="btn modern-btn modern-btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 {% endblock %}

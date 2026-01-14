@@ -2,19 +2,331 @@
 
 {% block title %}My Reports - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-folder2-open"></i> My Reports</h1>
-    <a href="{% url 'submit_report' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Submit New Report
-    </a>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="card">
-    <div class="card-body">
-        {% if reports %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Header Section */
+    .page-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        animation: fadeInUp 0.7s ease-out;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #7c3aed;
+    }
+
+    /* Modern Button */
+    .modern-btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+        color: white;
+    }
+
+    /* Glassmorphism Table Card */
+    .modern-table-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.9s ease-out;
+    }
+
+    .modern-table-card:hover {
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Modern Table */
+    .modern-table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .modern-table thead {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    }
+
+    .modern-table thead th {
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1.25rem 1.5rem;
+        border: none;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modern-table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modern-table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.8) 100%);
+        transform: scale(1.01);
+    }
+
+    .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        color: #475569;
+        vertical-align: middle;
+        border: none;
+    }
+
+    .modern-table tbody td strong {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+    }
+
+    .status-submitted {
+        background: var(--gradient-warning);
+    }
+
+    .status-reviewed {
+        background: var(--gradient-success);
+    }
+
+    /* View Button */
+    .modern-view-btn {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+        color: #7c3aed;
+        border: 2px solid #7c3aed;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modern-view-btn:hover {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    /* Modern Modal */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--shadow-hover);
+    }
+
+    .modal-header {
+        background: var(--gradient-primary);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .modal-header .modal-title {
+        font-weight: 700;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-body p {
+        color: #475569;
+        line-height: 1.7;
+    }
+
+    .modal-body strong {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .modal-body h6 {
+        color: #1e293b;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .modal-footer {
+        border: none;
+        padding: 1.5rem;
+    }
+
+    .modal-footer .btn-secondary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.625rem 1.5rem;
+        font-weight: 600;
+    }
+
+    .modal-footer .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .page-header-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .modern-btn-primary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modern-table thead th,
+        .modern-table tbody td {
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header Section -->
+    <div class="page-header-section">
+        <h1 class="page-header">
+            <i class="bi bi-folder2-open"></i> My Reports
+        </h1>
+        <a href="{% url 'submit_report' %}" class="btn modern-btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Submit New Report
+        </a>
+    </div>
+
+    <!-- Reports Table -->
+    {% if reports %}
+    <div class="modern-table-card">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table modern-table">
                 <thead>
                     <tr>
                         <th>Title</th>
@@ -31,17 +343,19 @@
                         <td>{{ report.created_at|date:"M d, Y H:i" }}</td>
                         <td>{{ report.station.name|default:"N/A" }}</td>
                         <td>
-                            <span class="badge bg-{% if report.status == 'SUBMITTED' %}warning{% else %}success{% endif %}">
+                            <span
+                                class="status-badge status-{% if report.status == 'SUBMITTED' %}submitted{% else %}reviewed{% endif %}">
                                 {{ report.get_status_display|default:"Submitted" }}
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportModal{{ report.pk }}">
+                            <button class="btn modern-view-btn" data-bs-toggle="modal"
+                                data-bs-target="#reportModal{{ report.pk }}">
                                 <i class="bi bi-eye"></i> View
                             </button>
                         </td>
                     </tr>
-                    
+
                     <!-- Report Detail Modal -->
                     <div class="modal fade" id="reportModal{{ report.pk }}" tabindex="-1">
                         <div class="modal-dialog modal-lg">
@@ -58,7 +372,8 @@
                                     <p>{{ report.content|linebreaks }}</p>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
@@ -67,9 +382,18 @@
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <p class="text-center text-muted">No reports found. <a href="{% url 'submit_report' %}">Submit your first report</a></p>
-        {% endif %}
     </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="modern-table-card">
+        <div class="empty-state">
+            <i class="bi bi-folder2-open"></i>
+            <p>No reports found.</p>
+            <a href="{% url 'submit_report' %}" class="btn modern-btn-primary">
+                <i class="bi bi-plus-circle"></i> Submit your first report
+            </a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

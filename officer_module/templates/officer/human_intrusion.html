@@ -2,46 +2,336 @@
 
 {% block title %}Human Intrusions - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-person-exclamation"></i> Human Intrusion Alerts</h1>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="row">
-    {% if intrusions %}
-    {% for intrusion in intrusions %}
-    <div class="col-md-6 mb-4">
-        <div
-            class="card border-{% if intrusion.status == 'NEW' %}danger{% elif intrusion.status == 'INVESTIGATING' %}warning{% else %}success{% endif %}">
-            <div class="card-header">
-                <strong>{{ intrusion.station.name }}</strong>
-                <span
-                    class="badge bg-{% if intrusion.status == 'NEW' %}danger{% elif intrusion.status == 'INVESTIGATING' %}warning{% else %}success{% endif %} float-end">
-                    {{ intrusion.get_status_display }}
-                </span>
-            </div>
-            <div class="card-body">
-                {% if intrusion.image %}
-                <img src="{{ intrusion.image.url }}" class="img-fluid mb-3" alt="Intrusion">
-                {% endif %}
-                <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y, h:i A" }}</p>
-                <p><strong>Location:</strong> {{ intrusion.location_details|default:"Location not available" }}</p>
-                {% if intrusion.notes %}
-                <p><strong>Notes:</strong> {{ intrusion.notes }}</p>
-                {% endif %}
-                {% if intrusion.status == 'NEW' or intrusion.status == 'INVESTIGATING' %}
-                <a href="{% url 'update_intrusion_status' intrusion.pk %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-pencil"></i> Update Status
-                </a>
-                {% endif %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-critical: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        --gradient-high: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-medium: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --gradient-low: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Gradient Header */
+    .page-header {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #d946ef;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+    }
+
+    /* Intrusion Alert Card */
+    .intrusion-alert-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.9s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .intrusion-alert-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .intrusion-alert-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .intrusion-alert-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .intrusion-alert-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .intrusion-alert-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Alert Header */
+    .alert-header {
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: var(--gradient-primary);
+    }
+
+    .alert-station-name {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Alert Body */
+    .alert-body {
+        padding: 1.75rem;
+    }
+
+    .alert-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-info {
+        margin-bottom: 1rem;
+    }
+
+    .alert-info-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .alert-info-value {
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .status-badge-card {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+    }
+
+    .status-new {
+        background: var(--gradient-critical);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-investigating {
+        background: var(--gradient-high);
+    }
+
+    .status-resolved {
+        background: var(--gradient-low);
+    }
+
+    /* Update Button */
+    .modern-update-btn {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(217, 70, 239, 0.1) 100%);
+        color: #8b5cf6;
+        border: 2px solid #8b5cf6;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        text-decoration: none;
+    }
+
+    .modern-update-btn:hover {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #94a3b8;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+        color: #d946ef;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Human Intrusion Header -->
+    <h1 class="page-header">
+        <i class="bi bi-person-exclamation"></i> Human Intrusion Alerts
+    </h1>
+
+    <!-- Alerts Grid -->
+    <div class="row">
+        {% if intrusions %}
+        {% for intrusion in intrusions %}
+        <div class="col-md-6 mb-4">
+            <div class="intrusion-alert-card">
+                <!-- Alert Header -->
+                <div class="alert-header">
+                    <h3 class="alert-station-name">{{ intrusion.station.name }}</h3>
+                    <span class="status-badge">{{ intrusion.get_status_display }}</span>
+                </div>
+
+                <!-- Alert Body -->
+                <div class="alert-body">
+                    {% if intrusion.image %}
+                    <img src="{{ intrusion.image.url }}" class="alert-image" alt="Intrusion Image">
+                    {% endif %}
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Detected:</span>
+                        <span class="alert-info-value">{{ intrusion.detected_at|date:"M d, Y, h:i A" }}</span>
+                    </div>
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Location:</span>
+                        <span class="alert-info-value">{{ intrusion.location_details|default:"N/A" }}</span>
+                    </div>
+
+                    {% if intrusion.notes %}
+                    <div class="alert-info">
+                        <span class="alert-info-label">Notes:</span>
+                        <span class="alert-info-value">{{ intrusion.notes }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert-info">
+                        <span class="alert-info-label">Status:</span>
+                        <span
+                            class="status-badge-card status-{% if intrusion.status == 'NEW' %}new{% elif intrusion.status == 'INVESTIGATING' %}investigating{% else %}resolved{% endif %}">
+                            {{ intrusion.get_status_display }}
+                        </span>
+                    </div>
+
+                    {% if intrusion.status == 'NEW' or intrusion.status == 'INVESTIGATING' %}
+                    <a href="{% url 'update_intrusion_status' intrusion.pk %}" class="modern-update-btn">
+                        <i class="bi bi-pencil-square"></i>
+                        Update Status
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-person-exclamation"></i>
+                <p>No human intrusion alerts found.</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="col-12">
-        <p class="text-center text-muted">No intrusion alerts for your station.</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

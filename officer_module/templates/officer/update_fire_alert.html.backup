@@ -1,4 +1,4 @@
-{% extends 'officer/base.html' %}
+﻿{% extends 'officer/base.html' %}
 
 {% block title %}Update Fire Alert - FLAME Guard Officer{% endblock %}
 
@@ -350,13 +350,13 @@
                                 New Status <span style="color: #ef4444;">*</span>
                             </label>
                             <select class="form-select modern-select" id="status" name="status" required>
-                                <option value="ACTIVE" {% if alert.status == 'ACTIVE' %}selected{% endif %}>Active
+                                <option value="ACTIVE" {% if alert.status=='ACTIVE' %}selected{% endif %}>Active
                                 </option>
-                                <option value="INVESTIGATING" {% if alert.status == 'INVESTIGATING' %}selected{% endif %}>
+                                <option value="INVESTIGATING" {% if alert.status=='INVESTIGATING' %}selected{% endif %}>
                                     Investigating</option>
-                                <option value="CONTAINED" {% if alert.status == 'CONTAINED' %}selected{% endif %}>
+                                <option value="CONTAINED" {% if alert.status=='CONTAINED' %}selected{% endif %}>
                                     Contained</option>
-                                <option value="RESOLVED" {% if alert.status == 'RESOLVED' %}selected{% endif %}>Resolved
+                                <option value="RESOLVED" {% if alert.status=='RESOLVED' %}selected{% endif %}>Resolved
                                 </option>
                             </select>
                             <div class="modern-helper-text">

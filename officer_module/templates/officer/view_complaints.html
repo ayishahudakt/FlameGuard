@@ -261,16 +261,9 @@
         margin-bottom: 1.5rem;
     }
 
-    .empty-state a {
-        color: #7c3aed;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .empty-state a:hover {
-        color: #6d28d9;
-        text-decoration: underline;
+    .empty-state p {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
     }
 
     /* Responsive */
@@ -361,7 +354,7 @@
         <div class="empty-state">
             <i class="bi bi-inbox"></i>
             <p>No complaints found.</p>
-            <a href="{% url 'send_complaint' %}">
+            <a href="{% url 'send_complaint' %}" class="btn modern-btn-primary">
                 <i class="bi bi-plus-circle"></i> Send your first complaint
             </a>
         </div>
