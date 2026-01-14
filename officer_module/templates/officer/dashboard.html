@@ -2,15 +2,417 @@
 
 {% block title %}Dashboard - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-speedometer2"></i> Officer Dashboard</h1>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<!-- Officer Info -->
-{% if officer_profile %}
-<div class="card mb-4">
-    <div class="card-body">
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-amber: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-cyan: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --gradient-fire: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        --gradient-purple: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-header: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+
+        --glass-bg: rgba(255, 255, 255, 0.15);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Fade-in Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dashboard-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Animated Gradient Header */
+    .dashboard-header {
+        background: var(--gradient-header);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .dashboard-header i {
+        -webkit-text-fill-color: #7c3aed;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Glassmorphism Officer Info Card */
+    .officer-info-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.7s ease-out;
+    }
+
+    .officer-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .officer-info-card h5 {
+        color: #1e293b;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .officer-info-card i {
+        color: #7c3aed;
+        margin-right: 0.5rem;
+    }
+
+    .officer-info-card p {
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.8;
+    }
+
+    .officer-info-card strong {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    /* Modern Stat Cards */
+    .modern-stat-card {
+        border-radius: 20px;
+        border: none;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: var(--shadow-soft);
+        animation: fadeInUp 0.8s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .modern-stat-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .modern-stat-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .modern-stat-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .modern-stat-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .modern-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0.9;
+        z-index: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modern-stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .modern-stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .stat-card-amber::before {
+        background: var(--gradient-amber);
+    }
+
+    .stat-card-cyan::before {
+        background: var(--gradient-cyan);
+    }
+
+    .stat-card-fire::before {
+        background: var(--gradient-fire);
+    }
+
+    .stat-card-purple::before {
+        background: var(--gradient-purple);
+    }
+
+    .stat-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        color: #ffffff;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 3rem;
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+
+    .modern-stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
+        opacity: 1;
+    }
+
+    /* Pulse Animation for Critical Alerts */
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+    }
+
+    .pulse-animation {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Glow Effect for High Value Alerts */
+    .glow-effect {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Modern Activity Cards */
+    .activity-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 1s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .activity-card:nth-child(1) {
+        animation-delay: 0.5s;
+    }
+
+    .activity-card:nth-child(2) {
+        animation-delay: 0.6s;
+    }
+
+    .activity-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .activity-card .card-header {
+        background: var(--gradient-header);
+        color: white;
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+        border: none;
+    }
+
+    .activity-card .card-header i {
+        margin-right: 0.5rem;
+    }
+
+    .activity-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Modern List Items */
+    .modern-list-item {
+        border: none;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .modern-list-item:hover {
+        background: linear-gradient(135deg, rgba(241, 245, 249, 1) 0%, rgba(226, 232, 240, 1) 100%);
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .modern-list-item h6 {
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .modern-list-item p {
+        color: #64748b;
+        margin-bottom: 0;
+    }
+
+    .modern-list-item small {
+        color: #94a3b8;
+    }
+
+    /* Modern Badges */
+    .modern-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bg-low {
+        background: var(--gradient-success) !important;
+        color: white !important;
+    }
+
+    .bg-medium {
+        background: var(--gradient-amber) !important;
+        color: white !important;
+    }
+
+    .bg-high {
+        background: var(--gradient-fire) !important;
+        color: white !important;
+    }
+
+    .bg-critical {
+        background: var(--gradient-fire) !important;
+        color: white !important;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Modern Buttons */
+    .modern-btn {
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .modern-btn-primary {
+        background: var(--gradient-cyan);
+        color: white;
+    }
+
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .modern-btn-danger {
+        background: var(--gradient-fire);
+        color: white;
+    }
+
+    .modern-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        color: #94a3b8;
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+        }
+
+        .modern-stat-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Animated Header -->
+    <h1 class="dashboard-header">
+        <i class="bi bi-speedometer2"></i> Officer Dashboard
+    </h1>
+
+    <!-- Glassmorphism Officer Info Card -->
+    {% if officer_profile %}
+    <div class="officer-info-card">
         <div class="row">
             <div class="col-md-6">
                 <h5><i class="bi bi-person-badge"></i> {{ request.user.username }}</h5>
@@ -28,147 +430,128 @@
             </div>
         </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
 
-<!-- Statistics -->
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
+    <!-- Modern Statistics Cards -->
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="modern-stat-card stat-card-amber">
+                <div class="stat-content d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="text-muted mb-1">Pending Complaints</p>
-                        <h3 class="mb-0">{{ pending_complaints }}</h3>
+                        <p class="stat-label">Pending Complaints</p>
+                        <h3 class="stat-value">{{ pending_complaints }}</h3>
                     </div>
-                    <div class="text-warning">
-                        <i class="bi bi-chat-left-text" style="font-size: 2rem;"></i>
+                    <div>
+                        <i class="bi bi-chat-left-text stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="modern-stat-card stat-card-cyan">
+                <div class="stat-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="stat-label">Unread Notifications</p>
+                        <h3 class="stat-value">{{ unread_notifications }}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-bell stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div
+                class="modern-stat-card stat-card-fire {% if active_fire_alerts > 0 %}pulse-animation glow-effect{% endif %}">
+                <div class="stat-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="stat-label">Active Fire Alerts</p>
+                        <h3 class="stat-value">{{ active_fire_alerts }}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-fire stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="modern-stat-card stat-card-purple {% if new_intrusions > 0 %}pulse-animation{% endif %}">
+                <div class="stat-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="stat-label">New Intrusions</p>
+                        <h3 class="stat-value">{{ new_intrusions }}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-exclamation stat-icon"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Unread Notifications</p>
-                        <h3 class="mb-0">{{ unread_notifications }}</h3>
-                    </div>
-                    <div class="text-info">
-                        <i class="bi bi-bell" style="font-size: 2rem;"></i>
-                    </div>
+    <!-- Modern Activity Cards -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card activity-card">
+                <div class="card-header">
+                    <i class="bi bi-bell"></i> Recent Notifications
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Active Fire Alerts</p>
-                        <h3 class="mb-0">{{ active_fire_alerts }}</h3>
-                    </div>
-                    <div class="text-danger">
-                        <i class="bi bi-fire" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">New Intrusions</p>
-                        <h3 class="mb-0">{{ new_intrusions }}</h3>
-                    </div>
-                    <div class="text-danger">
-                        <i class="bi bi-person-exclamation" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Activity -->
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-bell"></i> Recent Notifications
-            </div>
-            <div class="card-body">
-                {% if recent_notifications %}
-                <div class="list-group list-group-flush">
-                    {% for notification in recent_notifications %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ notification.title }}</h6>
-                            <small class="text-muted">{{ notification.created_at|date:"M d" }}</small>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                    <div class="list-group list-group-flush">
+                        {% for notification in recent_notifications %}
+                        <div class="modern-list-item"
+                            style="animation-delay: {{ forloop.counter|add:5|floatformat:1 }}s;">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <h6 class="mb-1">{{ notification.title }}</h6>
+                                <small class="text-muted">{{ notification.created_at|date:"M d" }}</small>
+                            </div>
+                            <p class="mb-0 small">{{ notification.message|truncatewords:15 }}</p>
                         </div>
-                        <p class="mb-1 small">{{ notification.message|truncatewords:15 }}</p>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    <a href="{% url 'view_officer_notifications' %}" class="btn modern-btn modern-btn-primary mt-3">
+                        View All Notifications
+                    </a>
+                    {% else %}
+                    <p class="empty-state text-center mb-0">No notifications available</p>
+                    {% endif %}
                 </div>
-                <a href="{% url 'view_officer_notifications' %}" class="btn btn-sm btn-outline-primary mt-2">View
-                    All</a>
-                {% else %}
-                <p class="text-muted text-center mb-0">No notifications</p>
-                {% endif %}
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-fire"></i> Recent Fire Alerts
-            </div>
-            <div class="card-body">
-                {% if recent_fire_alerts %}
-                <div class="list-group list-group-flush">
-                    {% for alert in recent_fire_alerts %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ alert.station.name }}</h6>
-                            <span class="badge bg-{{ alert.severity|lower }}">{{ alert.severity }}</span>
-                        </div>
-                        <small class="text-muted">{{ alert.detected_at|date:"M d, Y H:i" }}</small>
-                    </div>
-                    {% endfor %}
+        <div class="col-md-6 mb-4">
+            <div class="card activity-card">
+                <div class="card-header">
+                    <i class="bi bi-fire"></i> Recent Fire Alerts
                 </div>
-                <a href="{% url 'view_fire_alerts_officer' %}" class="btn btn-sm btn-outline-danger mt-2">View All</a>
-                {% else %}
-                <p class="text-muted text-center mb-0">No fire alerts</p>
-                {% endif %}
+                <div class="card-body">
+                    {% if recent_fire_alerts %}
+                    <div class="list-group list-group-flush">
+                        {% for alert in recent_fire_alerts %}
+                        <div class="modern-list-item"
+                            style="animation-delay: {{ forloop.counter|add:5|floatformat:1 }}s;">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <h6 class="mb-1">{{ alert.station.name }}</h6>
+                                <span class="badge modern-badge bg-{{ alert.severity|lower }}">{{ alert.severity
+                                    }}</span>
+                            </div>
+                            <small class="text-muted">{{ alert.detected_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'view_fire_alerts_officer' %}" class="btn modern-btn modern-btn-danger mt-3">
+                        View All Fire Alerts
+                    </a>
+                    {% else %}
+                    <p class="empty-state text-center mb-0">No fire alerts detected</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .bg-low {
-        background-color: #28a745 !important;
-    }
-
-    .bg-medium {
-        background-color: #ffc107 !important;
-    }
-
-    .bg-high {
-        background-color: #fd7e14 !important;
-    }
-
-    .bg-critical {
-        background-color: #dc3545 !important;
-    }
-</style>
 {% endblock %}
