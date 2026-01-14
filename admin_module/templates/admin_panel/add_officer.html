@@ -3,64 +3,279 @@
 {% block title %}Add Forest Officer - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-plus-circle"></i> Add Forest Officer</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Officer Registration</h1>
+    <a href="{% url 'manage_officers' %}" class="btn btn-outline-primary d-flex align-items-center">
+        <i data-feather="arrow-left" class="me-2" style="width: 16px;"></i> Back to Registry
+    </a>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">Account Information</div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username *</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <form method="post" id="officerForm" class="needs-validation">
+            {% csrf_token %}
+
+            <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 20px;">
+                <div class="card-header bg-primary-bg border-0 py-4 px-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon primary me-3 mb-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i data-feather="user"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-primary-main">Account Credentials</h4>
+                            <p class="text-muted small mb-0">Security and access information</p>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_username" class="form-label fw-bold text-dark small">Username*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="at-sign"
+                                        style="width: 16px;"></i></span>
+                                <input type="text" class="form-control border-0 bg-light" id="id_username"
+                                    name="username" pattern="[A-Za-z]+" required>
+                            </div>
+                            {% if form.username.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted mt-2 d-block">Alphabets only (no spaces or
+                                numbers)</small>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="id_email" class="form-label fw-bold text-dark small">Email Address*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="mail"
+                                        style="width: 16px;"></i></span>
+                                <input type="email" class="form-control border-0 bg-light" id="id_email" name="email"
+                                    required>
+                            </div>
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="id_password" class="form-label fw-bold text-dark small">Password*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="lock"
+                                        style="width: 16px;"></i></span>
+                                <input type="password" class="form-control border-0 bg-light" id="id_password"
+                                    name="password" minlength="8" required>
+                            </div>
+                            {% if form.password.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted mt-2 d-block">Min 8 chars: Upper, Lower, Digit,
+                                Special</small>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="id_phone_number" class="form-label fw-bold text-dark small">Phone
+                                Number*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="phone"
+                                        style="width: 16px;"></i></span>
+                                <input type="text" class="form-control border-0 bg-light" id="id_phone_number"
+                                    name="phone_number" pattern="\d{10}" maxlength="10" required>
+                            </div>
+                            {% if form.phone_number.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.phone_number.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted mt-2 d-block">Exactly 10 digits</small>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password *</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone_number" class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="phone_number" name="phone_number">
-                    </div>
-                    <hr>
-                    <h6>Officer Details</h6>
-                    <div class="mb-3">
-                        <label for="designation" class="form-label">Designation *</label>
-                        <input type="text" class="form-control" id="designation" name="designation"
-                            placeholder="e.g., Range Officer" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="badge_number" class="form-label">Badge Number</label>
-                        <input type="text" class="form-control" id="badge_number" name="badge_number">
-                    </div>
-                    <div class="mb-3">
-                        <label for="station" class="form-label">Assign to Station (Optional)</label>
-                        <select class="form-select" id="station" name="station">
-                            <option value="">Not Assigned</option>
-                            {% for station in stations %}
-                            <option value="{{ station.pk }}">{{ station.name }} ({{ station.division.name }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Create Officer
-                        </button>
-                        <a href="{% url 'manage_officers' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+
+            <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 20px;">
+                <div class="card-header bg-success-subtle border-0 py-4 px-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon success me-3 mb-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                            <i data-feather="briefcase"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-success">Officer Professional Details</h4>
+                            <p class="text-muted small mb-0">Role and deployment information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_designation" class="form-label fw-bold text-dark small">Official
+                                Designation*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="award"
+                                        style="width: 16px;"></i></span>
+                                <input type="text" class="form-control border-0 bg-light" id="id_designation"
+                                    name="designation" required>
+                            </div>
+                            {% if form.designation.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.designation.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="id_badge_number" class="form-label fw-bold text-dark small">Badge/Service
+                                Number*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="shield"
+                                        style="width: 16px;"></i></span>
+                                <input type="text" class="form-control border-0 bg-light" id="id_badge_number"
+                                    name="badge_number" required>
+                            </div>
+                            {% if form.badge_number.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.badge_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 mb-4">
+                            <label for="id_station" class="form-label fw-bold text-dark small">Assigned Station
+                                (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="home"
+                                        style="width: 16px;"></i></span>
+                                <select class="form-select border-0 bg-light" id="id_station" name="station">
+                                    <option value="" selected>Not Assigned</option>
+                                    {% for station in stations %}
+                                    <option value="{{ station.pk }}">{{ station.name }} ({{ station.division.name }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-8">
+                            <button type="submit"
+                                class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
+                                <i data-feather="user-plus" class="me-2" style="width: 18px;"></i> Register Officer
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'manage_officers' %}" class="btn btn-light w-100 py-3 text-muted">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
+
+<style>
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .bg-success-subtle {
+        background-color: #f0fdf4 !important;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: none !important;
+        background-color: #f8f9fa !important;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group>.form-control,
+    .input-group>.form-select {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .btn-primary {
+        font-weight: 600;
+        border-radius: 12px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const usernameInput = document.getElementById('id_username');
+        const phoneInput = document.getElementById('id_phone_number');
+        const emailInput = document.getElementById('id_email');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const form = document.querySelector('form');
+
+        // Apply classes to raw Django form widgets (fallback)
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                if (input.tagName === 'SELECT') input.classList.add('form-select');
+                else input.classList.add('form-control');
+            }
+        });
+
+        // Username validation
+        if (usernameInput) {
+            usernameInput.addEventListener('keydown', function (e) {
+                const char = e.key;
+                const isAlphabet = /^[A-Za-z]$/.test(char);
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+
+                if (!isAlphabet && !allowedKeys.includes(char)) {
+                    e.preventDefault();
+                    this.classList.add('is-invalid');
+                    setTimeout(() => this.classList.remove('is-invalid'), 500);
+                }
+            });
+        }
+
+        // Phone validation
+        if (phoneInput) {
+            phoneInput.addEventListener('keydown', function (e) {
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+                if (allowedKeys.includes(e.key)) return;
+                if (!/^\d$/.test(e.key)) e.preventDefault();
+            });
+
+            phoneInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+        }
+
+        // Email validation
+        function validateEmail() {
+            if (!emailInput) return true;
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const value = emailInput.value.trim();
+            const isValid = emailPattern.test(value);
+
+            if (value && !isValid) {
+                emailInput.classList.add('is-invalid');
+                if (submitBtn) submitBtn.disabled = true;
+                return false;
+            } else {
+                emailInput.classList.remove('is-invalid');
+                if (submitBtn) submitBtn.disabled = false;
+                return true;
+            }
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('input', validateEmail);
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    if (!validateEmail()) {
+                        e.preventDefault();
+                        alert('Please enter a valid email address with a proper domain (e.g. .com, .gov)');
+                    }
+                });
+            }
+        }
+    });
+</script>
 {% endblock %}

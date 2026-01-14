@@ -1,0 +1,88 @@
+{% extends 'officer/base.html' %}
+
+{% block title %}Update Animal Alert - FLAME Guard Officer{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-pencil"></i> Update Animal Alert Status</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        
+        <!-- Alert Details -->
+        <div class="card mb-3">
+            <div class="card-header">Alert Details</div>
+            <div class="card-body">
+                <p><strong>Station:</strong> {{ alert.station.name }}</p>
+                <p><strong>Animal:</strong> {{ alert.animal_type }}</p>
+
+                <p>
+                    <strong>Severity:</strong>
+                    <span class="badge bg-{% if alert.severity == 'CRITICAL' %}danger{% elif alert.severity == 'HIGH' %}warning{% else %}info{% endif %}">
+                        {{ alert.get_severity_display }}
+                    </span>
+                </p>
+
+                <p><strong>Detected:</strong> {{ alert.detected_at|date:"M d, Y H:i" }}</p>
+
+                <p>
+                    <strong>Current Status:</strong>
+                    <span class="badge bg-{% if alert.status == 'NEW' %}danger{% elif alert.status == 'ACKNOWLEDGED' %}warning{% elif alert.status == 'INVESTIGATING' %}info{% else %}success{% endif %}">
+                        {{ alert.get_status_display }}
+                    </span>
+                </p>
+
+                <p><strong>Confidence:</strong> {{ alert.confidence_score|floatformat:2 }}%</p>
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="card">
+            <div class="card-header">Update Status</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label">New Status *</label>
+
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="NEW" {% if alert.status == 'NEW' %}selected{% endif %}>New</option>
+
+                            <option value="ACKNOWLEDGED" {% if alert.status == 'ACKNOWLEDGED' %}selected{% endif %}>
+                                Acknowledged
+                            </option>
+
+                            <option value="INVESTIGATING" {% if alert.status == 'INVESTIGATING' %}selected{% endif %}>
+                                Investigating
+                            </option>
+
+                            <option value="RESOLVED" {% if alert.status == 'RESOLVED' %}selected{% endif %}>
+                                Resolved
+                            </option>
+                        </select>
+
+                        <div class="form-text mt-2">
+                            <i class="bi bi-info-circle"></i>
+                            Selecting <strong>Resolved</strong> will mark the alert as closed.
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Status
+                        </button>
+
+                        <a href="{% url 'view_animal_alerts' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

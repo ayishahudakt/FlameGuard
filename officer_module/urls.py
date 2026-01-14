@@ -15,9 +15,15 @@ urlpatterns = [
     
     # Reports
     path('reports/submit/', views.submit_report, name='submit_report'),
+    path('my-reports/', views.view_my_reports, name='view_my_reports'),
     
     # Fire Alerts
     path('fire-alerts/', views.view_fire_alerts, name='view_fire_alerts_officer'),
+    path('fire-alerts/update/<int:pk>/', views.update_fire_alert_status, name='update_fire_alert_status'),
+    
+    # Animal Detection
+    path('animal-alerts/', views.view_animal_alerts, name='view_animal_alerts'),
+    path('animal-alerts/update/<int:pk>/', views.update_animal_alert_status, name='update_animal_alert_status'),
     
     # User Alerts
     path('user-alerts/send/', views.send_user_alert, name='send_user_alert'),

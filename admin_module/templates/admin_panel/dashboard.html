@@ -3,165 +3,230 @@
 {% block title %}Dashboard - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1">Command Center</h1>
+        <p class="text-muted mb-0">Real-time forest monitoring and management</p>
+    </div>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <!--
         <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-calendar"></i> Today
+            <button type="button" class="btn btn-sm btn-primary d-flex align-items-center shadow-sm">
+                <i data-feather="calendar" class="me-2" style="width: 16px;"></i> Today
             </button>
         </div>
+        -->
     </div>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Forest Divisions</p>
-                        <h3 class="mb-0">{{ total_divisions }}</h3>
-                    </div>
-                    <div class="text-primary">
-                        <i class="bi bi-tree" style="font-size: 2rem;"></i>
-                    </div>
+<!-- Primary Statistics Cards with Gradients -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card-gradient stat-card-primary">
+            <div class="stat-card-content">
+                <div class="stat-icon-wrapper">
+                    <i data-feather="map"></i>
+                </div>
+                <div class="stat-details">
+                    <h2 class="stat-number">{{ total_divisions }}</h2>
+                    <p class="stat-label">Forest Divisions</p>
                 </div>
             </div>
+            <div class="stat-card-decoration"></div>
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Forest Stations</p>
-                        <h3 class="mb-0">{{ total_stations }}</h3>
-                    </div>
-                    <div class="text-success">
-                        <i class="bi bi-building" style="font-size: 2rem;"></i>
-                    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card-gradient stat-card-success">
+            <div class="stat-card-content">
+                <div class="stat-icon-wrapper">
+                    <i data-feather="home"></i>
+                </div>
+                <div class="stat-details">
+                    <h2 class="stat-number">{{ total_stations }}</h2>
+                    <p class="stat-label">Forest Stations</p>
                 </div>
             </div>
+            <div class="stat-card-decoration"></div>
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Forest Officers</p>
-                        <h3 class="mb-0">{{ total_officers }}</h3>
-                    </div>
-                    <div class="text-warning">
-                        <i class="bi bi-people" style="font-size: 2rem;"></i>
-                    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card-gradient stat-card-warning">
+            <div class="stat-card-content">
+                <div class="stat-icon-wrapper">
+                    <i data-feather="users"></i>
+                </div>
+                <div class="stat-details">
+                    <h2 class="stat-number">{{ total_officers }}</h2>
+                    <p class="stat-label">Forest Officers</p>
                 </div>
             </div>
+            <div class="stat-card-decoration"></div>
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
-        <div class="card stat-card danger">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="text-muted mb-1">Active Fire Alerts</p>
-                        <h3 class="mb-0">{{ active_fire_alerts }}</h3>
-                    </div>
-                    <div class="text-danger">
-                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem;"></i>
-                    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card-gradient stat-card-danger">
+            <div class="stat-card-content">
+                <div class="stat-icon-wrapper">
+                    <i data-feather="alert-triangle"></i>
+                </div>
+                <div class="stat-details">
+                    <h2 class="stat-number">{{ active_fire_alerts }}</h2>
+                    <p class="stat-label">Active Fire Alerts</p>
+                    {% if active_fire_alerts > 0 %}
+                    <span class="pulse-indicator"></span>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-bug text-info" style="font-size: 2.5rem;"></i>
-                <h4 class="mt-2">{{ total_animals }}</h4>
-                <p class="text-muted mb-0">Total Animals</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-shield-check text-success" style="font-size: 2.5rem;"></i>
-                <h4 class="mt-2">{{ total_preserved }}</h4>
-                <p class="text-muted mb-0">Preserved Animals</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="bi bi-chat-left-text text-warning" style="font-size: 2.5rem;"></i>
-                <h4 class="mt-2">{{ pending_complaints }}</h4>
-                <p class="text-muted mb-0">Pending Complaints</p>
-            </div>
+            <div class="stat-card-decoration"></div>
         </div>
     </div>
 </div>
 
-<!-- Recent Activity -->
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-file-text"></i> Recent Reports
+<!-- Secondary Statistics Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card modern-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon-circle info me-3">
+                    <i data-feather="target"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ total_animals }}</h3>
+                    <p class="text-muted mb-0 small">Total Animals</p>
+                </div>
             </div>
-            <div class="card-body">
-                {% if recent_reports %}
-                <div class="list-group list-group-flush">
-                    {% for report in recent_reports %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ report.title }}</h6>
-                            <small class="text-muted">{{ report.submitted_at|date:"M d, Y" }}</small>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card modern-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon-circle success me-3">
+                    <i data-feather="shield"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ total_preserved }}</h3>
+                    <p class="text-muted mb-0 small">Preserved Species</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card modern-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stat-icon-circle warning me-3">
+                    <i data-feather="message-square"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ pending_complaints }}</h3>
+                    <p class="text-muted mb-0 small">Pending Complaints</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header border-0 bg-transparent pt-4 px-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center">
+                        <div class="header-icon-badge primary me-2">
+                            <i data-feather="file-text" style="width: 16px;"></i>
                         </div>
-                        <small class="text-muted">By: {{ report.officer.username }}</small>
+                        Recent Reports
+                    </h5>
+                    <a href="{% url 'view_reports' %}"
+                        class="btn btn-sm btn-link text-primary text-decoration-none p-0">
+                        View All <i data-feather="arrow-right" style="width: 14px;"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_reports %}
+                <div class="activity-list">
+                    {% for report in recent_reports %}
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0">{{ report.title }}</h6>
+
+                                <!-- ✅ FIXED DATE (must be in one line) -->
+                                <span class="badge bg-light text-muted border">
+                                    {{ report.submitted_at|date:"M d" }}
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ report.officer.username }}&background=2d6a4f&color=fff&size=24"
+                                    alt="" class="rounded-circle me-2" width="24" height="24">
+                                <small class="text-muted">{{ report.officer.username }}</small>
+                            </div>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-muted text-center mb-0">No recent reports</p>
+                <div class="empty-state">
+                    <i data-feather="file" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                    <p class="text-muted mb-0">No recent reports</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-exclamation-triangle"></i> Recent Fire Alerts
-            </div>
-            <div class="card-body">
-                {% if recent_alerts %}
-                <div class="list-group list-group-flush">
-                    {% for alert in recent_alerts %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ alert.station.name }}</h6>
-                            <span class="badge bg-{{ alert.severity|lower }}">{{ alert.severity }}</span>
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header border-0 bg-transparent pt-4 px-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center">
+                        <div class="header-icon-badge danger me-2">
+                            <i data-feather="alert-triangle" style="width: 16px;"></i>
                         </div>
-                        <small class="text-muted">{{ alert.detected_at|date:"M d, Y H:i" }}</small>
-                        <br>
-                        <span class="badge bg-{{ alert.status|lower }} mt-1">{{ alert.status }}</span>
+                        Recent Fire Alerts
+                    </h5>
+                    <a href="{% url 'view_fire_alerts' %}"
+                        class="btn btn-sm btn-link text-primary text-decoration-none p-0">
+                        View All <i data-feather="arrow-right" style="width: 14px;"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_alerts %}
+                <div class="activity-list">
+                    {% for alert in recent_alerts %}
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0">{{ alert.station.name }}</h6>
+                                <span class="severity-badge severity-{{ alert.severity|lower }}">
+                                    {{ alert.severity|upper }}
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <small class="text-muted d-flex align-items-center">
+                                    <i data-feather="clock" class="me-1" style="width: 12px;"></i>
+                                    {{ alert.detected_at|date:"M d, H:i" }}
+                                </small>
+                                <span class="status-badge status-{{ alert.status|lower }}">
+                                    {{ alert.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-muted text-center mb-0">No recent fire alerts</p>
+                <div class="empty-state">
+                    <i data-feather="bell-off" class="text-muted mb-2" style="width: 48px; height: 48px;"></i>
+                    <p class="text-muted mb-0">No recent fire alerts</p>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -169,36 +234,261 @@
 </div>
 
 <style>
-    .bg-low {
-        background-color: #28a745 !important;
+    /* Gradient Stat Cards */
+    .stat-card-gradient {
+        position: relative;
+        border-radius: 20px;
+        padding: 2rem;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .bg-medium {
-        background-color: #ffc107 !important;
+    .stat-card-gradient:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    .bg-high {
-        background-color: #fd7e14 !important;
+    .stat-card-primary {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
     }
 
-    .bg-critical {
-        background-color: #dc3545 !important;
+    .stat-card-success {
+        background: linear-gradient(135deg, #40916c 0%, #74c69d 100%);
+        color: white;
     }
 
-    .bg-active {
-        background-color: #dc3545 !important;
+    .stat-card-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        color: white;
     }
 
-    .bg-investigating {
-        background-color: #ffc107 !important;
+    .stat-card-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #f87171 100%);
+        color: white;
     }
 
-    .bg-contained {
-        background-color: #17a2b8 !important;
+    .stat-card-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
     }
 
-    .bg-resolved {
-        background-color: #28a745 !important;
+    .stat-icon-wrapper {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .stat-icon-wrapper i {
+        width: 32px;
+        height: 32px;
+        stroke-width: 2.5;
+    }
+
+    .stat-details {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .stat-card-decoration {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    .pulse-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(1.2);
+        }
+    }
+
+    /* Modern Cards */
+    .modern-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .modern-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-icon-circle.info {
+        background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        color: white;
+    }
+
+    .stat-icon-circle.success {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        color: white;
+    }
+
+    .stat-icon-circle.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        color: white;
+    }
+
+    .header-icon-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .header-icon-badge.primary {
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        color: white;
+    }
+
+    .header-icon-badge.danger {
+        background: linear-gradient(135deg, #dc2626 0%, #f87171 100%);
+        color: white;
+    }
+
+    /* Activity List */
+    .activity-list {
+        padding: 0;
+    }
+
+    .activity-item {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background-color 0.2s ease;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-item:hover {
+        background-color: #f9fafb;
+    }
+
+    .activity-content h6 {
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+
+    /* Severity Badges */
+    .severity-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .severity-low {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .severity-medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .severity-high {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    .severity-critical {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+        text-transform: capitalize;
+    }
+
+    .status-active {
+        background: #dc2626;
+        color: white;
+    }
+
+    .status-investigating {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .status-contained {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .status-resolved {
+        background: #10b981;
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
     }
 </style>
 {% endblock %}

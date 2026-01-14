@@ -1,0 +1,75 @@
+﻿{% extends 'officer/base.html' %}
+
+{% block title %}My Reports - FLAME Guard Officer{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-folder2-open"></i> My Reports</h1>
+    <a href="{% url 'submit_report' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Submit New Report
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if reports %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Submitted</th>
+                        <th>Station</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td><strong>{{ report.title }}</strong></td>
+                        <td>{{ report.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ report.station.name|default:"N/A" }}</td>
+                        <td>
+                            <span class="badge bg-{% if report.status == 'SUBMITTED' %}warning{% else %}success{% endif %}">
+                                {{ report.get_status_display|default:"Submitted" }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportModal{{ report.pk }}">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Report Detail Modal -->
+                    <div class="modal fade" id="reportModal{{ report.pk }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{{ report.title }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Submitted:</strong> {{ report.created_at|date:"M d, Y H:i" }}</p>
+                                    <p><strong>Station:</strong> {{ report.station.name|default:"N/A" }}</p>
+                                    <hr>
+                                    <h6>Report Content:</h6>
+                                    <p>{{ report.content|linebreaks }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No reports found. <a href="{% url 'submit_report' %}">Submit your first report</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator, MaxValueValidator
 
 # ================================
 # 1. CUSTOM USER MODEL
@@ -30,9 +31,23 @@ class ForestDivision(models.Model):
     """
     Represents a large Forest Area (e.g., Wayanad North).
     """
-    name = models.CharField(max_length=100)
+    # Validator for alphabetic characters and spaces only
+    alpha_space_validator = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message='Only alphabets and spaces are allowed',
+        code='invalid_name'
+    )
+    
+    name = models.CharField(
+        max_length=100,
+        validators=[alpha_space_validator]
+    )
     description = models.TextField(blank=True)
-    location = models.CharField(max_length=200, blank=True)
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        validators=[alpha_space_validator]
+    )
 
     def __str__(self):
         return self.name
@@ -42,8 +57,27 @@ class ForestStation(models.Model):
     Represents a Station inside a Division (e.g., Begur Range).
     """
     division = models.ForeignKey(ForestDivision, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    contact_number = models.CharField(max_length=15)
+    
+    # Validators
+    alpha_space_validator = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message='Only alphabets and spaces are allowed',
+        code='invalid_name'
+    )
+    numeric_validator = RegexValidator(
+        regex=r'^\d{10}$',
+        message='Contact number must be exactly 10 digits',
+        code='invalid_contact_number'
+    )
+
+    name = models.CharField(
+        max_length=100,
+        validators=[alpha_space_validator]
+    )
+    contact_number = models.CharField(
+        max_length=15, 
+        validators=[numeric_validator]
+    )
     address = models.TextField()
 
     def __str__(self):
@@ -56,9 +90,16 @@ class Animal(models.Model):
     """
     Database of animals we want to protect/detect.
     """
+    # Validator: Must contain at least one alphabet
+    description_validator = RegexValidator(
+        regex=r'[a-zA-Z]',
+        message="Description must contain alphabetic characters. Numbers alone are not allowed.",
+        code='invalid_description'
+    )
+
     name = models.CharField(max_length=100) # e.g., Tiger
     scientific_name = models.CharField(max_length=100, blank=True)
-    description = models.TextField()
+    description = models.TextField(validators=[description_validator])
     is_dangerous = models.BooleanField(default=False)
     image = models.ImageField(upload_to='animals/', blank=True, null=True)
 
@@ -89,7 +130,11 @@ class PreservedAnimal(models.Model):
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE, related_name='preservation_info')
     preservation_status = models.CharField(max_length=30, choices=PRESERVATION_STATUS_CHOICES)
     threat_level = models.CharField(max_length=10, choices=THREAT_LEVEL_CHOICES)
-    population_estimate = models.IntegerField(null=True, blank=True)
+    population_estimate = models.IntegerField(
+        null=True, 
+        blank=True,
+        validators=[MaxValueValidator(999999, message="Population estimate must be a numeric value with a maximum of 6 digits.")]
+    )
     conservation_notes = models.TextField(blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     
@@ -110,7 +155,12 @@ class Complaint(models.Model):
     )
     
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_complaints')
-    subject = models.CharField(max_length=200)
+    subject_validator = RegexValidator(
+        regex=r'^[A-Za-z\s]+$',
+        message='Subject must contain only letters and spaces.',
+        code='invalid_subject'
+    )
+    subject = models.CharField(max_length=200, validators=[subject_validator])
     message = models.TextField()
     reply = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='PENDING')
@@ -190,6 +240,7 @@ class FireAlert(models.Model):
     location_details = models.TextField(blank=True)
     image = models.ImageField(upload_to='fire_alerts/', blank=True, null=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey('officer_module.ForestOfficer', on_delete=models.SET_NULL, null=True, blank=True, related_name='resolved_fire_alerts')
     
     def __str__(self):
         return f"Fire Alert - {self.station.name} ({self.severity})"

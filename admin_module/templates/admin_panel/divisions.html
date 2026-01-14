@@ -3,42 +3,69 @@
 {% block title %}Forest Divisions - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-tree"></i> Forest Divisions</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4">
+    <div>
+        <h1 class="h2 fw-bold mb-1">Forest Divisions</h1>
+        <p class="text-muted mb-0">Manage geographical divisions and jurisdictions</p>
+    </div>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{% url 'add_division' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Division
+        <a href="{% url 'add_division' %}" class="btn btn-primary d-flex align-items-center shadow-sm">
+            <i data-feather="plus-circle" class="me-2" style="width: 18px;"></i> Add Division
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
+<div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 16px;">
+    <div class="card-body p-0">
         {% if divisions %}
         <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th>Name</th>
-                        <th>Location</th>
-                        <th>Description</th>
-                        <th>Actions</th>
+                        <th class="ps-4 py-3 text-uppercase small text-muted font-weight-bold">Division Name</th>
+                        <th class="py-3 text-uppercase small text-muted font-weight-bold">Location</th>
+                        <th class="py-3 text-uppercase small text-muted font-weight-bold">Description</th>
+                        <th class="text-end pe-4 py-3 text-uppercase small text-muted font-weight-bold">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for division in divisions %}
                     <tr>
-                        <td><strong>{{ division.name }}</strong></td>
-                        <td>{{ division.location|default:"N/A" }}</td>
-                        <td>{{ division.description|truncatewords:10 }}</td>
+                        <td class="ps-4 py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-square me-3">
+                                    <div class="avatar-initials primary">
+                                        <i data-feather="map" style="width: 18px;"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ division.name }}</h6>
+                                  <!-- <small class="text-muted">ID: #{{ division.pk }}</small> -->
+                                </div>
+                            </div>
+                        </td>
                         <td>
-                            <a href="{% url 'edit_division' division.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i> Edit
-                            </a>
-                            <a href="{% url 'delete_division' division.pk %}" class="btn btn-sm btn-outline-danger"
-                                onclick="return confirm('Are you sure you want to delete this division?')">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
+                            <div class="d-flex align-items-center text-secondary">
+                                <i data-feather="map-pin" class="me-2" style="width: 14px;"></i>
+                                {{ division.location|default:"N/A" }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-muted">
+                                {{ division.description|truncatewords:8|default:"No description provided" }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group">
+                                <a href="{% url 'edit_division' division.pk %}"
+                                    class="btn btn-icon btn-light text-primary me-2" title="Edit">
+                                    <i data-feather="edit-2" style="width: 16px;"></i>
+                                </a>
+                                <button type="button" class="btn btn-icon btn-light text-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal{{ division.pk }}" title="Delete">
+                                    <i data-feather="trash-2" style="width: 16px;"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -46,9 +73,103 @@
             </table>
         </div>
         {% else %}
-        <p class="text-center text-muted">No forest divisions found. <a href="{% url 'add_division' %}">Add one now</a>
-        </p>
+        <div class="p-5 text-center">
+            <div class="stat-icon-circle primary mx-auto mb-4" style="width: 64px; height: 64px;">
+                <i data-feather="map" style="width: 32px; height: 32px;"></i>
+            </div>
+            <h5 class="fw-bold">No divisions found</h5>
+            <p class="text-muted mb-4">Get started by adding your first forest division.</p>
+            <a href="{% url 'add_division' %}" class="btn btn-primary d-inline-flex align-items-center">
+                <i data-feather="plus-circle" class="me-2"></i> Add Division
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Modals Container (Placed outside properly) -->
+{% for division in divisions %}
+<div class="modal fade" id="deleteModal{{ division.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="stat-icon-circle danger mx-auto shadow-sm" style="width: 80px; height: 80px;">
+                        <i data-feather="alert-triangle" style="width: 40px; height: 40px;"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-2">Delete {{ division.name }}?</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to remove this division? Data associated with it might be affected.
+                </p>
+                <div class="d-flex gap-2 justify-content-center w-100">
+                    <button type="button" class="btn btn-light px-4 py-2 fw-bold flex-grow-1"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'delete_division' division.pk %}"
+                        class="btn btn-danger px-4 py-2 fw-bold flex-grow-1">Delete Division</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .avatar-square {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .avatar-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .avatar-initials.primary {
+        background-color: #d1fae5;
+        color: #059669;
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-icon-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .stat-icon-circle.primary {
+        background-color: #ecfdf5;
+        color: #059669;
+    }
+
+    .stat-icon-circle.danger {
+        background-color: #fef2f2;
+        color: #dc2626;
+    }
+
+    .table> :not(caption)>*>* {
+        padding: 1rem 0.75rem;
+    }
+</style>
 {% endblock %}

@@ -1,205 +1,179 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}FLAME Guard Admin{% endblock %}</title>
-    
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
+    <!-- Bootstrap Icons for some specific needs -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/admin_theme.css' %}">
+
     {% block extra_css %}{% endblock %}
-    
-    <style>
-        :root {
-            --primary-color: #2d6a4f;
-            --secondary-color: #40916c;
-            --accent-color: #52b788;
-            --danger-color: #d62828;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #fff;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-        }
-        
-        .sidebar .nav-link {
-            color: #495057;
-            padding: 12px 20px;
-            border-left: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background-color: #f8f9fa;
-            border-left-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-        }
-        
-        .card {
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .card-header {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            font-weight: 600;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .stat-card {
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        .stat-card.danger {
-            border-left-color: var(--danger-color);
-        }
-        
-        .stat-card.warning {
-            border-left-color: #ffc107;
-        }
-        
-        .stat-card.success {
-            border-left-color: #28a745;
-        }
-    </style>
 </head>
+
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{% url 'admin_dashboard' %}">
-                <i class="bi bi-fire"></i> FLAME Guard Admin
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ request.user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'admin_logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3 class="d-flex align-items-center">
+                    <i data-feather="shield" class="me-2"></i>
+                    <span>FLAME Guard</span>
+                </h3>
             </div>
-        </div>
-    </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-2 d-md-block sidebar">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin_dashboard' %}">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'manage_divisions' %}">
-                                <i class="bi bi-tree"></i> Forest Divisions
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'manage_stations' %}">
-                                <i class="bi bi-building"></i> Forest Stations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'manage_animals' %}">
-                                <i class="bi bi-bug"></i> Animals
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'manage_preserved_animals' %}">
-                                <i class="bi bi-shield-check"></i> Preserved Animals
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'manage_officers' %}">
-                                <i class="bi bi-people"></i> Forest Officers
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'view_complaints' %}">
-                                <i class="bi bi-chat-left-text"></i> Complaints
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'send_notification' %}">
-                                <i class="bi bi-bell"></i> Send Notification
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'view_reports' %}">
-                                <i class="bi bi-file-text"></i> Reports
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'view_fire_alerts' %}">
-                                <i class="bi bi-exclamation-triangle"></i> Fire Alerts
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <ul class="list-unstyled components">
+                <li class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}">
+                        <i data-feather="activity"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'manage_divisions' %}active{% endif %}">
+                    <a href="{% url 'manage_divisions' %}">
+                        <i data-feather="map"></i>
+                        <span>Forest Divisions</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'manage_stations' %}active{% endif %}">
+                    <a href="{% url 'manage_stations' %}">
+                        <i data-feather="home"></i>
+                        <span>Forest Stations</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'manage_animals' %}active{% endif %}">
+                    <a href="{% url 'manage_animals' %}">
+                        <i data-feather="gitlab"></i>
+                        <span>Animals</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'manage_preserved_animals' %}active{% endif %}">
+                    <a href="{% url 'manage_preserved_animals' %}">
+                        <i data-feather="award"></i>
+                        <span>Preserved Animals</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'manage_officers' %}active{% endif %}">
+                    <a href="{% url 'manage_officers' %}">
+                        <i data-feather="users"></i>
+                        <span>Forest Officers</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'view_complaints' %}active{% endif %}">
+                    <a href="{% url 'view_complaints' %}">
+                        <i data-feather="message-circle"></i>
+                        <span>Complaints</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'send_notification' %}active{% endif %}">
+                    <a href="{% url 'send_notification' %}">
+                        <i data-feather="send"></i>
+                        <span>Send Notification</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'view_reports' %}active{% endif %}">
+                    <a href="{% url 'view_reports' %}">
+                        <i data-feather="clipboard"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'view_fire_alerts' %}active{% endif %}">
+                    <a href="{% url 'view_fire_alerts' %}">
+                        <i data-feather="alert-triangle"></i>
+                        <span>Fire Alerts</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-            <!-- Main Content -->
-            <main class="col-md-10 ms-sm-auto px-md-4">
-                <div class="pt-3 pb-2 mb-3">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
-                    {% block content %}{% endblock %}
+        <!-- Page Content -->
+        <div id="content">
+            <header class="main-header d-flex align-items-center justify-content-between">
+                <button type="button" id="sidebarCollapse" class="btn btn-link link-dark p-0">
+                    <i data-feather="menu"></i>
+                </button>
+
+                <div class="header-right d-flex align-items-center">
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=2d6a4f&color=fff"
+                                alt="Profile" class="rounded-circle me-2" width="32">
+                            <span class="d-none d-md-inline">{{ request.user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                            <li><a class="dropdown-item" href="{% url 'admin_logout' %}"><i data-feather="log-out"
+                                        class="me-2" style="width: 16px;"></i> Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
+            </header>
+
+            <main class="p-4">
+                {% if messages %}
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm"
+                        role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if message.tags == 'success' %}
+                            <i data-feather="check-circle" class="me-2 text-success"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                            <i data-feather="alert-circle" class="me-2 text-danger"></i>
+                            {% else %}
+                            <i data-feather="info" class="me-2 text-info"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
             </main>
         </div>
     </div>
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Sidebar Toggle
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Auto-close alerts after 5 seconds
+        setTimeout(function () {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                let bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

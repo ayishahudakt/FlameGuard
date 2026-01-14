@@ -1,0 +1,55 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Edit Forest Station - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+\u003cdiv class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3
+border-bottom"\u003e
+\u003ch1 class="h2"\u003e\u003ci class="bi bi-pencil"\u003e\u003c/i\u003e Edit Forest Station\u003c/h1\u003e
+\u003c/div\u003e
+
+\u003cdiv class="row"\u003e
+\u003cdiv class="col-md-8"\u003e
+\u003cdiv class="card"\u003e
+\u003cdiv class="card-body"\u003e
+\u003cform method="post"\u003e
+{% csrf_token %}
+\u003cdiv class="mb-3"\u003e
+\u003clabel for="division" class="form-label"\u003eForest Division *\u003c/label\u003e
+\u003cselect class="form-select" id="division" name="division" required\u003e
+{% for div in divisions %}
+\u003coption value="{{ div.pk }}" {% if div.pk == station.division.pk %}selected{% endif %}\u003e
+{{ div.name }}
+\u003c/option\u003e
+{% endfor %}
+\u003c/select\u003e
+\u003c/div\u003e
+\u003cdiv class="mb-3"\u003e
+\u003clabel for="name" class="form-label"\u003eStation Name *\u003c/label\u003e
+\u003cinput type="text" class="form-control" id="name" name="name" value="{{ station.name }}"
+required\u003e
+\u003c/div\u003e
+\u003cdiv class="mb-3"\u003e
+\u003clabel for="contact_number" class="form-label"\u003eContact Number *\u003c/label\u003e
+\u003cinput type="text" class="form-control" id="contact_number" name="contact_number"
+value="{{ station.contact_number }}" required\u003e
+\u003c/div\u003e
+\u003cdiv class="mb-3"\u003e
+\u003clabel for="address" class="form-label"\u003eAddress *\u003c/label\u003e
+\u003ctextarea class="form-control" id="address" name="address" rows="3"
+required\u003e{{ station.address }}\u003c/textarea\u003e
+\u003c/div\u003e
+\u003cdiv class="d-flex gap-2"\u003e
+\u003cbutton type="submit" class="btn btn-primary"\u003e
+\u003ci class="bi bi-check-circle"\u003e\u003c/i\u003e Update Station
+\u003c/button\u003e
+\u003ca href="{% url 'manage_stations' %}" class="btn btn-secondary"\u003e
+\u003ci class="bi bi-x-circle"\u003e\u003c/i\u003e Cancel
+\u003c/a\u003e
+\u003c/div\u003e
+\u003c/form\u003e
+\u003c/div\u003e
+\u003c/div\u003e
+\u003c/div\u003e
+\u003c/div\u003e
+{% endblock %}

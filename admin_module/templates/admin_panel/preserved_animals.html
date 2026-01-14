@@ -3,51 +3,157 @@
 {% block title %}Preserved Animals - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-shield-check"></i> Preserved Animals</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Preserved Animals</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{% url 'add_preserved_animal' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add to Preserved List
+        <a href="{% url 'add_preserved_animal' %}" class="btn btn-primary d-flex align-items-center shadow-sm">
+            <i data-feather="plus-circle" class="me-2"></i> Add to Preserved List
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        {% if preserved_animals %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Animal</th>
-                        <th>Preservation Status</th>
-                        <th>Threat Level</th>
-                        <th>Population Estimate</th>
-                        <th>Last Updated</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for preserved in preserved_animals %}
-                    <tr>
-                        <td><strong>{{ preserved.animal.name }}</strong></td>
-                        <td><span class="badge bg-warning">{{ preserved.get_preservation_status_display }}</span></td>
-                        <td>
-                            <span
-                                class="badge bg-{% if preserved.threat_level == 'CRITICAL' %}danger{% elif preserved.threat_level == 'HIGH' %}warning{% else %}info{% endif %}">
-                                {{ preserved.get_threat_level_display }}
-                            </span>
-                        </td>
-                        <td>{{ preserved.population_estimate|default:"N/A" }}</td>
-                        <td>{{ preserved.last_updated|date:"M d, Y" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="row">
+    {% if preserved_animals %}
+    {% for preserved in preserved_animals %}
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm overflow-hidden preserved-card">
+            <div class="card-header bg-primary-bg border-0 d-flex justify-content-between align-items-center py-3">
+                <h5 class="fw-bold mb-0 text-primary-main">{{ preserved.animal.name }}</h5>
+                <span class="badge rounded-pill bg-white text-primary-main shadow-sm" style="font-size: 0.75rem;">
+                    {{ preserved.get_preservation_status_display }}
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Threat Level</p>
+                        <span
+                            class="badge w-100 bg-{{ preserved.threat_level|lower }}-subtle text-{{ preserved.threat_level|lower }} border border-{{ preserved.threat_level|lower }}-subtle py-2">
+                            {{ preserved.get_threat_level_display }}
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Population</p>
+                        <div class="fw-bold text-dark">{{ preserved.population_estimate|default:"N/A" }}</div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 mb-0">
+                    <div class="d-flex align-items-center text-muted small">
+                        <i data-feather="calendar" class="me-2" style="width: 14px;"></i>
+                        Last Updated: {{ preserved.last_updated|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white border-0 pt-0 pb-3 hstack gap-2 px-3">
+                <a href="{% url 'edit_preserved_animal' preserved.pk %}"
+                    class="btn btn-sm btn-outline-primary flex-grow-1 py-2">
+                    <i data-feather="edit-2" class="me-1" style="width: 14px;"></i> Edit
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1 py-2" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal{{ preserved.pk }}">
+                    <i data-feather="trash-2" class="me-1" style="width: 14px;"></i> Delete
+                </button>
+            </div>
         </div>
-        {% else %}
-        <p class="text-center text-muted">No preserved animals found. <a href="{% url 'add_preserved_animal' %}">Add one
-                now</a></p>
-        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="stat-icon success mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+            <i data-feather="shield"></i>
+        </div>
+        <h5 class="fw-bold">No preserved animals</h5>
+        <p class="text-muted mb-4">Start tracking endangered or protected species.</p>
+        <a href="{% url 'add_preserved_animal' %}" class="btn btn-primary d-inline-flex align-items-center">
+            <i data-feather="plus-circle" class="me-2"></i> Add to List
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modals Container (Moved Outside Card Grid) -->
+{% if preserved_animals %}
+{% for preserved in preserved_animals %}
+<div class="modal fade" id="deleteModal{{ preserved.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="stat-icon danger mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                        <i data-feather="alert-triangle"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-3">Remove from List?</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to remove <strong>{{ preserved.animal.name }}</strong> from the
+                    preserved list?
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'delete_preserved_animal' preserved.pk %}" class="btn btn-danger px-4 py-2">Remove
+                        Now</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endfor %}
+{% endif %}
+
+<style>
+    .preserved-card {
+        transition: all 0.3s ease;
+    }
+
+    .preserved-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .bg-low-subtle {
+        background-color: #d1fae5 !important;
+        color: #065f46 !important;
+        border-color: #a7f3d0 !important;
+    }
+
+    .bg-medium-subtle {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border-color: #fde68a !important;
+    }
+
+    .bg-high-subtle {
+        background-color: #ffedd5 !important;
+        color: #9a3412 !important;
+        border-color: #fed7aa !important;
+    }
+
+    .bg-critical-subtle {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+        border-color: #fecaca !important;
+    }
+
+    .text-low {
+        color: #059669 !important;
+    }
+
+    .text-medium {
+        color: #d97706 !important;
+    }
+
+    .text-high {
+        color: #ea580c !important;
+    }
+
+    .text-critical {
+        color: #dc2626 !important;
+    }
+</style>
 {% endblock %}

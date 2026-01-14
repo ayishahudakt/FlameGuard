@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from .models import (CustomUser, ForestDivision, ForestStation, Animal, 
                      PreservedAnimal, Complaint, Notification, Report, FireAlert)
+from .forms import ForestDivisionForm, ForestStationForm, AnimalForm, PreservedAnimalForm, ForestOfficerForm, ForestOfficerEditForm
 from officer_module.models import ForestOfficer
 
 # ================================
@@ -82,19 +83,18 @@ def manage_divisions(request):
 def add_division(request):
     """Add new forest division"""
     if request.method == 'POST':
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        location = request.POST.get('location')
-        
-        ForestDivision.objects.create(
-            name=name,
-            description=description,
-            location=location
-        )
-        messages.success(request, 'Forest Division added successfully!')
-        return redirect('manage_divisions')
+        form = ForestDivisionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Forest Division added successfully!')
+            return redirect('manage_divisions')
+        else:
+            # Form has validation errors, they will be displayed in template
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ForestDivisionForm()
     
-    return render(request, 'admin_panel/add_division.html')
+    return render(request, 'admin_panel/add_division.html', {'form': form})
 
 @admin_required
 def edit_division(request, pk):
@@ -102,14 +102,17 @@ def edit_division(request, pk):
     division = get_object_or_404(ForestDivision, pk=pk)
     
     if request.method == 'POST':
-        division.name = request.POST.get('name')
-        division.description = request.POST.get('description')
-        division.location = request.POST.get('location')
-        division.save()
-        messages.success(request, 'Division updated successfully!')
-        return redirect('manage_divisions')
+        form = ForestDivisionForm(request.POST, instance=division)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Division updated successfully!')
+            return redirect('manage_divisions')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ForestDivisionForm(instance=division)
     
-    return render(request, 'admin_panel/edit_division.html', {'division': division})
+    return render(request, 'admin_panel/edit_division.html', {'form': form, 'division': division})
 
 @admin_required
 def delete_division(request, pk):
@@ -132,22 +135,17 @@ def manage_stations(request):
 def add_station(request):
     """Add new forest station"""
     if request.method == 'POST':
-        division_id = request.POST.get('division')
-        name = request.POST.get('name')
-        contact_number = request.POST.get('contact_number')
-        address = request.POST.get('address')
-        
-        ForestStation.objects.create(
-            division_id=division_id,
-            name=name,
-            contact_number=contact_number,
-            address=address
-        )
-        messages.success(request, 'Forest Station added successfully!')
-        return redirect('manage_stations')
+        form = ForestStationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Forest Station added successfully!')
+            return redirect('manage_stations')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ForestStationForm()
     
-    divisions = ForestDivision.objects.all()
-    return render(request, 'admin_panel/add_station.html', {'divisions': divisions})
+    return render(request, 'admin_panel/add_station.html', {'form': form})
 
 @admin_required
 def edit_station(request, pk):
@@ -155,16 +153,17 @@ def edit_station(request, pk):
     station = get_object_or_404(ForestStation, pk=pk)
     
     if request.method == 'POST':
-        station.division_id = request.POST.get('division')
-        station.name = request.POST.get('name')
-        station.contact_number = request.POST.get('contact_number')
-        station.address = request.POST.get('address')
-        station.save()
-        messages.success(request, 'Station updated successfully!')
-        return redirect('manage_stations')
+        form = ForestStationForm(request.POST, instance=station)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Station updated successfully!')
+            return redirect('manage_stations')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ForestStationForm(instance=station)
     
-    divisions = ForestDivision.objects.all()
-    return render(request, 'admin_panel/edit_station.html', {'station': station, 'divisions': divisions})
+    return render(request, 'admin_panel/edit_station.html', {'form': form, 'station': station})
 
 @admin_required
 def delete_station(request, pk):
@@ -187,26 +186,212 @@ def manage_animals(request):
 def add_animal(request):
     """Add new animal"""
     if request.method == 'POST':
-        name = request.POST.get('name')
-        scientific_name = request.POST.get('scientific_name')
-        description = request.POST.get('description')
-        is_dangerous = request.POST.get('is_dangerous') == 'on'
-        image = request.FILES.get('image')
-        
-        Animal.objects.create(
-            name=name,
-            scientific_name=scientific_name,
-            description=description,
-            is_dangerous=is_dangerous,
-            image=image
-        )
-        messages.success(request, 'Animal added successfully!')
-        return redirect('manage_animals')
+        form = AnimalForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Animal added successfully!')
+            return redirect('manage_animals')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = AnimalForm()
     
-    return render(request, 'admin_panel/add_animal.html')
+    return render(request, 'admin_panel/add_animal.html', {'form': form})
 
 @admin_required
 def edit_animal(request, pk):
+    """Edit animal"""
+    animal = get_object_or_404(Animal, pk=pk)
+    
+    if request.method == 'POST':
+        form = AnimalForm(request.POST, request.FILES, instance=animal)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Animal updated successfully!')
+            return redirect('manage_animals')
+        else:
+             messages.error(request, 'Please correct the errors below.')
+    else:
+        form = AnimalForm(instance=animal)
+    
+    return render(request, 'admin_panel/edit_animal.html', {'form': form, 'animal': animal})
+
+@admin_required
+def delete_animal(request, pk):
+    """Delete animal"""
+    animal = get_object_or_404(Animal, pk=pk)
+    animal.delete()
+    messages.success(request, 'Animal deleted successfully!')
+    return redirect('manage_animals')
+
+# ================================
+# 6. PRESERVED ANIMAL MANAGEMENT
+# ================================
+@admin_required
+def manage_preserved_animals(request):
+    """List all preserved animals"""
+    preserved = PreservedAnimal.objects.select_related('animal').all()
+    return render(request, 'admin_panel/preserved_animals.html', {'preserved_animals': preserved})
+
+@admin_required
+def add_preserved_animal(request):
+    """Add animal to preserved list"""
+    if request.method == 'POST':
+        form = PreservedAnimalForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Preserved animal added successfully!')
+            return redirect('manage_preserved_animals')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PreservedAnimalForm()
+    
+    animals = Animal.objects.all()
+    return render(request, 'admin_panel/add_preserved_animal.html', {'form': form, 'animals': animals})
+
+# ================================
+# 7. FOREST OFFICER MANAGEMENT
+# ================================
+@admin_required
+def manage_officers(request):
+    """List all forest officers"""
+    officers = ForestOfficer.objects.select_related('user', 'station').all()
+    return render(request, 'admin_panel/officers.html', {'officers': officers})
+
+@admin_required
+def add_officer(request):
+    """Add new forest officer"""
+    if request.method == 'POST':
+        form = ForestOfficerForm(request.POST)
+        if form.is_valid():
+            # Create user account
+            user = CustomUser.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                user_type='OFFICER',
+                phone_number=form.cleaned_data['phone_number']
+            )
+            
+            # Create officer profile
+            ForestOfficer.objects.create(
+                user=user,
+                station=form.cleaned_data['station'],
+                designation=form.cleaned_data['designation'],
+                badge_number=form.cleaned_data['badge_number']
+            )
+            messages.success(request, 'Forest Officer added successfully!')
+            return redirect('manage_officers')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ForestOfficerForm()
+    
+    stations = ForestStation.objects.all()
+    return render(request, 'admin_panel/add_officer.html', {'form': form, 'stations': stations})
+
+@admin_required
+def allocate_officer(request, pk):
+    """Allocate officer to a station"""
+    officer = get_object_or_404(ForestOfficer, pk=pk)
+    
+    if request.method == 'POST':
+        station_id = request.POST.get('station')
+        officer.station_id = station_id if station_id else None
+        officer.save()
+        messages.success(request, 'Officer allocated successfully!')
+        return redirect('manage_officers')
+    
+    stations = ForestStation.objects.all()
+    return render(request, 'admin_panel/allocate_officer.html', {'officer': officer, 'stations': stations})
+
+# ================================
+# 8. COMPLAINT MANAGEMENT
+# ================================
+@admin_required
+def view_complaints(request):
+    """View all complaints"""
+    complaints = Complaint.objects.select_related('sender').all()
+    return render(request, 'admin_panel/complaints.html', {'complaints': complaints})
+
+@admin_required
+def reply_complaint(request, pk):
+    """Reply to a complaint"""
+    complaint = get_object_or_404(Complaint, pk=pk)
+    
+    if request.method == 'POST':
+        reply = request.POST.get('reply')
+        complaint.reply = reply
+        complaint.status = 'RESOLVED'
+        complaint.replied_at = timezone.now()
+        complaint.save()
+        messages.success(request, 'Reply sent successfully!')
+        return redirect('view_complaints')
+    
+    return render(request, 'admin_panel/reply_complaint.html', {'complaint': complaint})
+
+# ================================
+# 9. NOTIFICATION SYSTEM
+# ================================
+@admin_required
+def send_notification(request):
+    """Send notification to forest officers"""
+    if request.method == 'POST':
+        officer_id = request.POST.get('officer')
+        title = request.POST.get('title')
+        message = request.POST.get('message')
+        
+        Notification.objects.create(
+            from_admin=request.user,
+            to_officer_id=officer_id,
+            title=title,
+            message=message
+        )
+        messages.success(request, 'Notification sent successfully!')
+        return redirect('view_sent_notifications')
+    
+    officers = CustomUser.objects.filter(user_type='OFFICER')
+    return render(request, 'admin_panel/send_notification.html', {'officers': officers})
+
+@admin_required
+def view_sent_notifications(request):
+    """View history of notifications sent by Admin"""
+    sent_notifications = Notification.objects.filter(from_admin=request.user)
+    return render(request, 'admin_panel/sent_notifications.html', {'notifications': sent_notifications})
+
+# ================================
+# 10. VIEW REPORTS
+# ================================
+@admin_required
+def view_reports(request):
+    """View all officer reports"""
+    reports = Report.objects.select_related('officer', 'station').all()
+    return render(request, 'admin_panel/reports.html', {'reports': reports})
+
+# ================================
+# 11. VIEW FIRE ALERTS
+# ================================
+@admin_required
+def view_fire_alerts(request):
+    """View all fire alerts"""
+    alerts = FireAlert.objects.select_related('station').all()
+    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
+
+@admin_required
+def update_fire_alert(request, pk):
+    """Update fire alert status"""
+    alert = get_object_or_404(FireAlert, pk=pk)
+    
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        alert.status = status
+        if status == 'RESOLVED':
+            alert.resolved_at = timezone.now()
+        alert.save()
+        messages.success(request, 'Fire alert updated successfully!')
+        return redirect('view_fire_alerts')
+    
     """Edit animal"""
     animal = get_object_or_404(Animal, pk=pk)
     
@@ -232,6 +417,204 @@ def delete_animal(request, pk):
     return redirect('manage_animals')
 
 # ================================
+# 6. PRESERVED ANIMAL MANAGEMENT
+# ================================
+@admin_required
+def manage_preserved_animals(request):
+    """List all preserved animals"""
+    preserved = PreservedAnimal.objects.select_related('animal').all()
+    return render(request, 'admin_panel/preserved_animals.html', {'preserved_animals': preserved})
+
+@admin_required
+def add_preserved_animal(request):
+    """Add animal to preserved list"""
+    if request.method == 'POST':
+        animal_id = request.POST.get('animal')
+        preservation_status = request.POST.get('preservation_status')
+        threat_level = request.POST.get('threat_level')
+        population_estimate = request.POST.get('population_estimate')
+        conservation_notes = request.POST.get('conservation_notes')
+        
+        PreservedAnimal.objects.create(
+            animal_id=animal_id,
+            preservation_status=preservation_status,
+            threat_level=threat_level,
+            population_estimate=population_estimate if population_estimate else None,
+            conservation_notes=conservation_notes
+        )
+        messages.success(request, 'Preserved animal added successfully!')
+        return redirect('manage_preserved_animals')
+    
+    animals = Animal.objects.all()
+    return render(request, 'admin_panel/add_preserved_animal.html', {'animals': animals})
+
+# ================================
+# 7. FOREST OFFICER MANAGEMENT
+# ================================
+@admin_required
+def manage_officers(request):
+    """List all forest officers"""
+    officers = ForestOfficer.objects.select_related('user', 'station').all()
+    return render(request, 'admin_panel/officers.html', {'officers': officers})
+
+@admin_required
+def add_officer(request):
+    """Add new forest officer"""
+    if request.method == 'POST':
+        # Create user account
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        phone_number = request.POST.get('phone_number')
+        
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            user_type='OFFICER',
+            phone_number=phone_number
+        )
+        
+        # Create officer profile
+        station_id = request.POST.get('station')
+        designation = request.POST.get('designation')
+        badge_number = request.POST.get('badge_number')
+        
+        ForestOfficer.objects.create(
+            user=user,
+            station_id=station_id if station_id else None,
+            designation=designation,
+            badge_number=badge_number
+        )
+        messages.success(request, 'Forest Officer added successfully!')
+        return redirect('manage_officers')
+    
+    stations = ForestStation.objects.all()
+    return render(request, 'admin_panel/add_officer.html', {'stations': stations})
+
+@admin_required
+def allocate_officer(request, pk):
+    """Allocate officer to a station"""
+    officer = get_object_or_404(ForestOfficer, pk=pk)
+    
+    if request.method == 'POST':
+        station_id = request.POST.get('station')
+        officer.station_id = station_id if station_id else None
+        officer.save()
+        messages.success(request, 'Officer allocated successfully!')
+        return redirect('manage_officers')
+    
+    stations = ForestStation.objects.all()
+    return render(request, 'admin_panel/allocate_officer.html', {'officer': officer, 'stations': stations})
+
+# ================================
+# 8. COMPLAINT MANAGEMENT
+# ================================
+@admin_required
+def view_complaints(request):
+    """View all complaints"""
+    complaints = Complaint.objects.select_related('sender').all()
+    return render(request, 'admin_panel/complaints.html', {'complaints': complaints})
+
+@admin_required
+def reply_complaint(request, pk):
+    """Reply to a complaint"""
+    complaint = get_object_or_404(Complaint, pk=pk)
+    
+    if request.method == 'POST':
+        reply = request.POST.get('reply')
+        complaint.reply = reply
+        complaint.status = 'RESOLVED'
+        complaint.replied_at = timezone.now()
+        complaint.save()
+        messages.success(request, 'Reply sent successfully!')
+        return redirect('view_complaints')
+    
+    return render(request, 'admin_panel/reply_complaint.html', {'complaint': complaint})
+
+# ================================
+# 9. NOTIFICATION SYSTEM
+# ================================
+@admin_required
+def send_notification(request):
+    """Send notification to forest officers"""
+    if request.method == 'POST':
+        officer_id = request.POST.get('officer')
+        title = request.POST.get('title')
+        message = request.POST.get('message')
+        if not officer_id or not title or not message:
+            messages.error(request, 'All fields are required. Please select an officer and provide a title and message.')
+            return redirect('send_notification')
+
+        Notification.objects.create(
+            from_admin=request.user,
+            to_officer_id=officer_id,
+            title=title,
+            message=message
+        )
+        messages.success(request, 'Notification sent successfully!')
+        return redirect('admin_dashboard')
+    
+    officers = CustomUser.objects.filter(user_type='OFFICER')
+    return render(request, 'admin_panel/send_notification.html', {'officers': officers})
+
+# ================================
+# 10. VIEW REPORTS
+# ================================
+@admin_required
+def view_reports(request):
+    """View all officer reports"""
+    reports = Report.objects.select_related('officer', 'station').all()
+    return render(request, 'admin_panel/reports.html', {'reports': reports})
+
+# ================================
+# 11. VIEW FIRE ALERTS
+# ================================
+@admin_required
+def view_fire_alerts(request):
+    """View all fire alerts"""
+    alerts = FireAlert.objects.select_related('station').all()
+    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
+
+@admin_required
+def update_fire_alert(request, pk):
+    """Update fire alert status"""
+    alert = get_object_or_404(FireAlert, pk=pk)
+    
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        alert.status = status
+        if status == 'RESOLVED':
+            alert.resolved_at = timezone.now()
+        alert.save()
+        messages.success(request, 'Fire alert updated successfully!')
+        return redirect('view_fire_alerts')
+    
+    return render(request, 'admin_panel/update_fire_alert.html', {'alert': alert})
+
+
+@admin_required
+def edit_preserved_animal(request, pk):
+    """Edit preserved animal"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
+    
+    if request.method == 'POST':
+        preserved.animal_id = request.POST.get('animal')
+        preserved.preservation_status = request.POST.get('preservation_status')
+        preserved.threat_level = request.POST.get('threat_level')
+        preserved.population_estimate = request.POST.get('population_estimate') if request.POST.get('population_estimate') else None
+        preserved.conservation_notes = request.POST.get('conservation_notes')
+        preserved.save()
+        messages.success(request, 'Preserved animal updated successfully!')
+        return redirect('manage_preserved_animals')
+    
+    animals = Animal.objects.all()
+    return render(request, 'admin_panel/edit_preserved_animal.html', {'preserved': preserved, 'animals': animals})
+
+@admin_required
+def delete_preserved_animal(request, pk):
+    """Delete preserved animal"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
 # 6. PRESERVED ANIMAL MANAGEMENT
 # ================================
 @admin_required
@@ -403,3 +786,80 @@ def update_fire_alert(request, pk):
         return redirect('view_fire_alerts')
     
     return render(request, 'admin_panel/update_fire_alert.html', {'alert': alert})
+
+
+@admin_required
+def edit_preserved_animal(request, pk):
+    """Edit preserved animal"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
+    
+    if request.method == 'POST':
+        preserved.animal_id = request.POST.get('animal')
+        preserved.preservation_status = request.POST.get('preservation_status')
+        preserved.threat_level = request.POST.get('threat_level')
+        preserved.population_estimate = request.POST.get('population_estimate') if request.POST.get('population_estimate') else None
+        preserved.conservation_notes = request.POST.get('conservation_notes')
+        preserved.save()
+        messages.success(request, 'Preserved animal updated successfully!')
+        return redirect('manage_preserved_animals')
+    
+    animals = Animal.objects.all()
+    return render(request, 'admin_panel/edit_preserved_animal.html', {'preserved': preserved, 'animals': animals})
+
+@admin_required
+def delete_preserved_animal(request, pk):
+    """Delete preserved animal"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
+    preserved.delete()
+    messages.success(request, 'Preserved animal removed successfully!')
+    return redirect('manage_preserved_animals')
+
+
+@admin_required
+def edit_officer(request, pk):
+    """Edit forest officer"""
+    officer = get_object_or_404(ForestOfficer, pk=pk)
+    
+    if request.method == 'POST':
+        form = ForestOfficerEditForm(request.POST)
+        if form.is_valid():
+            # Update user details
+            officer.user.username = form.cleaned_data['username']
+            officer.user.email = form.cleaned_data['email']
+            officer.user.phone_number = form.cleaned_data['phone_number']
+            officer.user.save()
+            
+            # Update officer details
+            officer.station = form.cleaned_data['station']
+            officer.designation = form.cleaned_data['designation']
+            officer.badge_number = form.cleaned_data['badge_number']
+            officer.save()
+            
+            messages.success(request, 'Officer updated successfully!')
+            return redirect('manage_officers')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        # Pre-fill form with existing data
+        initial_data = {
+            'username': officer.user.username,
+            'email': officer.user.email,
+            'phone_number': officer.user.phone_number,
+            'station': officer.station,
+            'designation': officer.designation,
+            'badge_number': officer.badge_number,
+        }
+        form = ForestOfficerEditForm(initial=initial_data)
+    
+    stations = ForestStation.objects.all()
+    return render(request, 'admin_panel/edit_officer.html', {'officer': officer, 'stations': stations, 'form': form})
+
+@admin_required
+def delete_officer(request, pk):
+    """Delete forest officer"""
+    officer = get_object_or_404(ForestOfficer, pk=pk)
+    user = officer.user
+    officer.delete()
+    user.delete()  # Also delete the user account
+    messages.success(request, 'Officer deleted successfully!')
+    return redirect('manage_officers')

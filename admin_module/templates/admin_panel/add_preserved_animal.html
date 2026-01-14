@@ -3,63 +3,196 @@
 {% block title %}Add Preserved Animal - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-plus-circle"></i> Add Preserved Animal</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Conservation Tracking</h1>
+    <a href="{% url 'manage_preserved_animals' %}" class="btn btn-outline-primary d-flex align-items-center">
+        <i data-feather="arrow-left" class="me-2" style="width: 16px;"></i> Back to List
+    </a>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="post">
+<div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+            <div class="card-header bg-primary-bg border-0 py-4 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon primary me-3 mb-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                        <i data-feather="shield"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-primary-main">Add to Preservation Registry</h4>
+                        <p class="text-muted small mb-0">Monitor and track endangered species health</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" id="preservedAnimalForm" class="needs-validation">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="animal" class="form-label">Select Animal *</label>
-                        <select class="form-select" id="animal" name="animal" required>
-                            <option value="">Choose an animal</option>
-                            {% for animal in animals %}
-                            <option value="{{ animal.pk }}">{{ animal.name }}</option>
-                            {% endfor %}
-                        </select>
+
+                    <div class="mb-4">
+                        <label for="id_animal" class="form-label fw-bold text-dark small">Select Animal Species*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="search"
+                                    style="width: 16px;"></i></span>
+                            <select class="form-select" id="id_animal" name="animal" required>
+                                <option value="" selected disabled>Choose an animal species...</option>
+                                {% for animal in animals %}
+                                <option value="{{ animal.pk }}">{{ animal.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if form.animal.errors %}
+                        <div class="invalid-feedback d-block mt-2">{{ form.animal.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div class="mb-3">
-                        <label for="preservation_status" class="form-label">Preservation Status *</label>
-                        <select class="form-select" id="preservation_status" name="preservation_status" required>
-                            <option value="ENDANGERED">Endangered</option>
-                            <option value="VULNERABLE">Vulnerable</option>
-                            <option value="CRITICALLY_ENDANGERED">Critically Endangered</option>
-                            <option value="PROTECTED">Protected</option>
-                        </select>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="id_preservation_status" class="form-label fw-bold text-dark small">Preservation
+                                Status*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="award"
+                                        style="width: 16px;"></i></span>
+                                <select class="form-select" id="id_preservation_status" name="preservation_status"
+                                    required>
+                                    <option value="ENDANGERED">Endangered</option>
+                                    <option value="VULNERABLE">Vulnerable</option>
+                                    <option value="CRITICALLY_ENDANGERED">Critically Endangered</option>
+                                    <option value="PROTECTED">Protected</option>
+                                </select>
+                            </div>
+                            {% if form.preservation_status.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.preservation_status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="id_threat_level" class="form-label fw-bold text-dark small">Threat
+                                Level*</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i data-feather="alert-triangle"
+                                        style="width: 16px;"></i></span>
+                                <select class="form-select" id="id_threat_level" name="threat_level" required>
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="CRITICAL">Critical</option>
+                                </select>
+                            </div>
+                            {% if form.threat_level.errors %}
+                            <div class="invalid-feedback d-block mt-2">{{ form.threat_level.errors.0 }}</div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="threat_level" class="form-label">Threat Level *</label>
-                        <select class="form-select" id="threat_level" name="threat_level" required>
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM">Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="CRITICAL">Critical</option>
-                        </select>
+
+                    <div class="mb-4">
+                        <label for="id_population_estimate" class="form-label fw-bold text-dark small">Population
+                            Estimate</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="bar-chart-2"
+                                    style="width: 16px;"></i></span>
+                            <input type="number" class="form-control" id="id_population_estimate"
+                                name="population_estimate" min="0" max="999999" placeholder="e.g., 150">
+                        </div>
+                        {% if form.population_estimate.errors %}
+                        <div class="invalid-feedback d-block mt-2">{{ form.population_estimate.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted mt-2 d-block">Numeric estimate, max 6 digits</small>
                     </div>
-                    <div class="mb-3">
-                        <label for="population_estimate" class="form-label">Population Estimate</label>
-                        <input type="number" class="form-control" id="population_estimate" name="population_estimate">
+
+                    <div class="mb-5">
+                        <label for="id_conservation_notes" class="form-label fw-bold text-dark small">Conservation
+                            Notes</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 align-items-start pt-2">
+                                <i data-feather="book-open" style="width: 16px;"></i>
+                            </span>
+                            <textarea class="form-control" id="id_conservation_notes" name="conservation_notes" rows="4"
+                                placeholder="Detail preservation efforts, habitat conditions, or specific threats..."></textarea>
+                        </div>
+                        {% if form.conservation_notes.errors %}
+                        <div class="invalid-feedback d-block mt-2">{{ form.conservation_notes.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div class="mb-3">
-                        <label for="conservation_notes" class="form-label">Conservation Notes</label>
-                        <textarea class="form-control" id="conservation_notes" name="conservation_notes"
-                            rows="4"></textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Save
-                        </button>
-                        <a href="{% url 'manage_preserved_animals' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <button type="submit"
+                                class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
+                                <i data-feather="save" class="me-2" style="width: 18px;"></i> Save Record
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'manage_preserved_animals' %}" class="btn btn-light w-100 py-3 text-muted">
+                                Cancel
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: none !important;
+        background-color: #f8f9fa !important;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group>.form-control,
+    .input-group>.form-select {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .btn-primary {
+        font-weight: 600;
+        border-radius: 12px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const populationInput = document.getElementById('id_population_estimate');
+
+        // Apply classes to raw Django form widgets
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                if (input.tagName === 'SELECT') input.classList.add('form-select');
+                else input.classList.add('form-control');
+            }
+        });
+
+        if (populationInput) {
+            populationInput.addEventListener('keydown', function (e) {
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
+                if (allowedKeys.includes(e.key)) return;
+                if (['e', 'E', '-', '.', '+'].includes(e.key) || isNaN(parseInt(e.key))) {
+                    e.preventDefault();
+                    this.classList.add('is-invalid');
+                    setTimeout(() => this.classList.remove('is-invalid'), 500);
+                }
+            });
+
+            populationInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length > 6) {
+                    this.value = this.value.slice(0, 6);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

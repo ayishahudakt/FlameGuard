@@ -24,8 +24,8 @@
                 {% if intrusion.image %}
                 <img src="{{ intrusion.image.url }}" class="img-fluid mb-3" alt="Intrusion">
                 {% endif %}
-                <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y H:i" }}</p>
-                <p><strong>Location:</strong> {{ intrusion.location_details|default:"N/A" }}</p>
+                <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y, h:i A" }}</p>
+                <p><strong>Location:</strong> {{ intrusion.location_details|default:"Location not available" }}</p>
                 {% if intrusion.notes %}
                 <p><strong>Notes:</strong> {{ intrusion.notes }}</p>
                 {% endif %}

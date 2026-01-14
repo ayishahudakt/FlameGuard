@@ -15,7 +15,9 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="subject" class="form-label">Subject *</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required>
+                        <input type="text" class="form-control" id="subject" name="subject" required
+                            pattern="[A-Za-z\s]+" title="Subject must contain only letters and spaces.">
+                        <div class="form-text">Only alphabets and spaces are allowed.</div>
                     </div>
                     <div class="mb-3">
                         <label for="message" class="form-label">Message *</label>

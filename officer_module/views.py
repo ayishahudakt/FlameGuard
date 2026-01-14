@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+import re
 from django.utils import timezone
 from django.db.models import Q
 from admin_module.models import (CustomUser, ForestStation, Complaint, 
@@ -85,6 +86,10 @@ def send_complaint(request):
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         
+        if not re.match(r'^[A-Za-z\s]+$', subject):
+            messages.error(request, 'Subject must contain only letters and spaces.')
+            return redirect('send_complaint')
+            
         Complaint.objects.create(
             sender=request.user,
             subject=subject,
@@ -123,14 +128,11 @@ def submit_report(request):
             station=station
         )
         messages.success(request, 'Report submitted successfully!')
-        return redirect('officer_dashboard')
+        return redirect('view_my_reports')
     
     return render(request, 'officer/submit_report.html')
 
-# ================================
-# 5. FIRE ALERTS
-# ================================
-@officer_required
+
 def view_fire_alerts(request):
     """View fire alerts for officer's station"""
     try:
@@ -213,3 +215,72 @@ def view_notifications(request):
     notifications.filter(is_read=False).update(is_read=True)
     
     return render(request, 'officer/notifications.html', {'notifications': notifications})
+
+
+# ================================
+# 9. ANIMAL DETECTION ALERTS
+# ================================
+@officer_required
+def view_animal_alerts(request):
+    """View animal detection alerts for officer's station"""
+    try:
+        station = request.user.officer_profile.station
+        from .models import AnimalAlert
+        alerts = AnimalAlert.objects.filter(station=station).order_by('-detected_at')
+    except:
+        alerts = []
+    
+    return render(request, 'officer/animal_alerts.html', {'alerts': alerts})
+
+# ================================
+# 10. MY REPORTS
+# ================================
+@officer_required
+def view_my_reports(request):
+    """View officer's own submitted reports"""
+    reports = Report.objects.filter(officer=request.user).order_by('-submitted_at')
+    return render(request, 'officer/my_reports.html', {'reports': reports})
+
+# ================================
+# 11. FIRE ALERT STATUS UPDATE
+# ================================
+@officer_required
+def update_fire_alert_status(request, pk):
+    """Update fire alert status"""
+    alert = get_object_or_404(FireAlert, pk=pk)
+    
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        alert.status = status
+        
+        if status == 'RESOLVED':
+            alert.resolved_at = timezone.now()
+            try:
+                alert.resolved_by = request.user.officer_profile
+            except:
+                pass
+        
+        alert.save()
+        messages.success(request, 'Fire alert status updated successfully!')
+        return redirect('view_fire_alerts_officer')
+    
+    return render(request, 'officer/update_fire_alert.html', {'alert': alert})
+
+@officer_required
+def update_animal_alert_status(request, pk):
+    """Update animal alert status"""
+    from .models import AnimalAlert
+    alert = get_object_or_404(AnimalAlert, pk=pk)
+    
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        alert.status = status
+        
+        if status == 'RESOLVED':
+            alert.resolved_at = timezone.now()
+        
+        alert.save()
+        messages.success(request, 'Animal alert status updated successfully!')
+        return redirect('view_animal_alerts')
+    
+    return render(request, 'officer/update_animal_alert.html', {'alert': alert})

@@ -1,62 +1,160 @@
-{% extends 'admin_panel/base.html' %}
+﻿{% extends 'admin_panel/base.html' %}
 
 {% block title %}Forest Officers - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-people"></i> Forest Officers</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Forest Officers</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{% url 'add_officer' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Officer
+        <a href="{% url 'add_officer' %}" class="btn btn-primary d-flex align-items-center shadow-sm">
+            <i data-feather="plus-circle" class="me-2"></i> Add Officer
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
         {% if officers %}
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+                        <th class="ps-4">Officer Details</th>
+                        <th>Contact</th>
                         <th>Designation</th>
                         <th>Station</th>
-                        <th>Badge Number</th>
-                        <th>Actions</th>
+                        <th>Badge #</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for officer in officers %}
-                    <tr>
-                        <td><strong>{{ officer.user.username }}</strong></td>
-                        <td>{{ officer.user.email }}</td>
-                        <td>{{ officer.user.phone_number|default:"N/A" }}</td>
-                        <td>{{ officer.designation }}</td>
+                    <tr class="align-middle">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ officer.user.username }}&background=d8f3dc&color=2d6a4f&bold=true"
+                                    alt="" class="rounded-circle me-3" width="40" height="40">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold">{{ officer.user.username }}</span>
+                                    <!-- <span class="text-muted small">Officer ID: #{{ officer.pk }}</span>-->
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="small d-flex align-items-center text-dark">
+                                    <i data-feather="mail" class="me-1 text-muted" style="width: 12px;"></i>
+                                    {{ officer.user.email }}
+                                </span>
+                                <span class="small d-flex align-items-center text-muted">
+                                    <i data-feather="phone" class="me-1" style="width: 12px;"></i>
+                                    {{ officer.user.phone_number|default:"No Phone" }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                {{ officer.designation }}
+                            </span>
+                        </td>
+
                         <td>
                             {% if officer.station %}
-                            <span class="badge bg-success">{{ officer.station.name }}</span>
+                            <div class="d-flex flex-column">
+                                <span
+                                    class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 mb-1">
+                                    {{ officer.station.name }}
+                                </span>
+
+                                <!-- ✅ FIXED LINE HERE -->
+                                <small class="text-muted" style="font-size: 0.7rem;">
+                                    {{ officer.station.division }}
+                                </small>
+                            </div>
                             {% else %}
-                            <span class="badge bg-warning">Not Allocated</span>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                                Not Allocated
+                            </span>
                             {% endif %}
                         </td>
-                        <td>{{ officer.badge_number|default:"N/A" }}</td>
-                        <td>
-                            <a href="{% url 'allocate_officer' officer.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-geo-alt"></i> Allocate
-                            </a>
+
+                        <td class="text-muted fw-medium">
+                            {{ officer.badge_number|default:"N/A" }}
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <div class="btn-group">
+                                <a href="{% url 'edit_officer' officer.pk %}"
+                                    class="btn btn-sm btn-link text-primary p-2" title="Edit">
+                                    <i data-feather="edit-2" style="width: 18px;"></i>
+                                </a>
+
+                                <button type="button" class="btn btn-sm btn-link text-danger p-2" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal{{ officer.pk }}" title="Delete">
+                                    <i data-feather="trash-2" style="width: 18px;"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
         {% else %}
-        <p class="text-center text-muted">No forest officers found. <a href="{% url 'add_officer' %}">Add one now</a>
-        </p>
+        <div class="p-5 text-center">
+            <div class="stat-icon primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                <i data-feather="users"></i>
+            </div>
+            <h5 class="fw-bold">No officers found</h5>
+            <p class="text-muted mb-4">You haven't added any forest officers yet.</p>
+            <a href="{% url 'add_officer' %}" class="btn btn-primary d-inline-flex align-items-center">
+                <i data-feather="plus-circle" class="me-2"></i> Add Officer
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Modals Container (Moved Outside Table) -->
+{% for officer in officers %}
+<div class="modal fade" id="deleteModal{{ officer.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="stat-icon danger mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                        <i data-feather="alert-triangle"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-3">Remove Officer?</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to delete <strong>{{ officer.user.username }}</strong>?
+                    This will also remove their user account.
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'delete_officer' officer.pk %}" class="btn btn-danger px-4 py-2">Delete Officer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<style>
+    .bg-success-subtle {
+        background-color: #d1fae5 !important;
+        color: #065f46 !important;
+        border-color: #a7f3d0 !important;
+    }
+
+    .bg-warning-subtle {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border-color: #fde68a !important;
+    }
+</style>
 {% endblock %}
