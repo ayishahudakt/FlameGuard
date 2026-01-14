@@ -2,46 +2,370 @@
 
 {% block title %}My Complaints - FLAME Guard Officer{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-inbox"></i> My Complaints</h1>
-    <a href="{% url 'send_complaint' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> New Complaint
-    </a>
-</div>
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<div class="card">
-    <div class="card-body">
-        {% if complaints %}
-        {% for complaint in complaints %}
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ complaint.subject }}</strong>
-                    <br>
-                    <small class="text-muted">{{ complaint.created_at|date:"M d, Y H:i" }}</small>
-                </div>
-                <span
-                    class="badge bg-{% if complaint.status == 'PENDING' %}warning{% elif complaint.status == 'IN_PROGRESS' %}info{% else %}success{% endif %}">
-                    {{ complaint.get_status_display }}
-                </span>
-            </div>
-            <div class="card-body">
-                <p><strong>Your Message:</strong></p>
-                <p>{{ complaint.message }}</p>
-                {% if complaint.reply %}
-                <div class="alert alert-success mt-3">
-                    <strong><i class="bi bi-reply"></i> Admin Reply:</strong><br>
-                    {{ complaint.reply }}
-                    <br><small class="text-muted">Replied on: {{ complaint.replied_at|date:"M d, Y H:i" }}</small>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="text-center text-muted">No complaints found. <a href="{% url 'send_complaint' %}">Send one now</a></p>
-        {% endif %}
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-info: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modern Typography */
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Page Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-container {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Header Section */
+    .page-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        animation: fadeInUp 0.7s ease-out;
+    }
+
+    .page-header {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .page-header i {
+        -webkit-text-fill-color: #7c3aed;
+    }
+
+    /* Modern Button */
+    .modern-btn-primary {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+        color: white;
+    }
+
+    /* Complaint Card */
+    .complaint-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.8s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .complaint-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .complaint-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .complaint-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .complaint-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .complaint-card:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .complaint-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Complaint Header */
+    .complaint-header {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .complaint-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .complaint-date {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+    }
+
+    .status-pending {
+        background: var(--gradient-warning);
+    }
+
+    .status-in-progress {
+        background: var(--gradient-info);
+    }
+
+    .status-resolved {
+        background: var(--gradient-success);
+    }
+
+    /* Complaint Body */
+    .complaint-body {
+        padding: 1.75rem;
+    }
+
+    .message-label {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .message-text {
+        color: #475569;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+
+    /* Admin Reply Box */
+    .admin-reply-box {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%);
+        border-left: 4px solid #10b981;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+
+    .reply-header {
+        color: #10b981;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .reply-header i {
+        font-size: 1.2rem;
+    }
+
+    .reply-text {
+        color: #1e293b;
+        line-height: 1.7;
+        margin-bottom: 0.5rem;
+    }
+
+    .reply-date {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state a {
+        color: #7c3aed;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state a:hover {
+        color: #6d28d9;
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            font-size: 1.5rem;
+        }
+
+        .page-header-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .modern-btn-primary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .complaint-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .status-badge {
+            align-self: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header Section -->
+    <div class="page-header-section">
+        <h1 class="page-header">
+            <i class="bi bi-inbox"></i> My Complaints
+        </h1>
+        <a href="{% url 'send_complaint' %}" class="btn modern-btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            New Complaint
+        </a>
     </div>
+
+    <!-- Complaints List -->
+    {% if complaints %}
+    {% for complaint in complaints %}
+    <div class="complaint-card">
+        <!-- Complaint Header -->
+        <div class="complaint-header">
+            <div>
+                <h3 class="complaint-title">{{ complaint.subject }}</h3>
+                <div class="complaint-date">
+                    <i class="bi bi-calendar3"></i> {{ complaint.created_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+            <span
+                class="status-badge status-{% if complaint.status == 'PENDING' %}pending{% elif complaint.status == 'IN_PROGRESS' %}in-progress{% else %}resolved{% endif %}">
+                {{ complaint.get_status_display }}
+            </span>
+        </div>
+
+        <!-- Complaint Body -->
+        <div class="complaint-body">
+            <p class="message-label">
+                <i class="bi bi-chat-left-text"></i> Your Message:
+            </p>
+            <p class="message-text">{{ complaint.message }}</p>
+
+            <!-- Admin Reply -->
+            {% if complaint.reply %}
+            <div class="admin-reply-box">
+                <div class="reply-header">
+                    <i class="bi bi-reply-fill"></i>
+                    Admin Reply
+                </div>
+                <p class="reply-text">{{ complaint.reply }}</p>
+                <div class="reply-date">
+                    <i class="bi bi-clock"></i> Replied on: {{ complaint.replied_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <!-- Empty State -->
+    <div class="complaint-card">
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No complaints found.</p>
+            <a href="{% url 'send_complaint' %}">
+                <i class="bi bi-plus-circle"></i> Send your first complaint
+            </a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
