@@ -141,12 +141,9 @@
                                         <option value="">Not Assigned</option>
 
                                         {% for station in stations %}
-                                            <option value="{{ station.pk }}"
-                                                {% if officer.station and station.pk == officer.station.pk %}
-                                                    selected
-                                                {% endif %}>
-                                                {{ station.name }} ({{ station.division.name }})
-                                            </option>
+                                        <option value="{{ station.pk }}" {% if officer.station and station.pk == officer.station.pk %}selected{% endif %}>
+                                            {{ station.name }} ({{ station.division.name }})
+                                        </option>
                                         {% endfor %}
                                     </select>
 
@@ -257,7 +254,6 @@
         // Email validation
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('email-error');
-        const submitBtn = document.querySelector('button[type="submit"]');
 
         function validateEmail() {
             if (!emailInput) return true;
@@ -268,12 +264,10 @@
             if (value && !isValid) {
                 emailInput.classList.add('is-invalid');
                 if (emailError) emailError.style.display = 'block';
-                if (submitBtn) submitBtn.disabled = true;
                 return false;
             } else {
                 emailInput.classList.remove('is-invalid');
                 if (emailError) emailError.style.display = 'none';
-                if (submitBtn) submitBtn.disabled = false;
                 return true;
             }
         }
@@ -283,12 +277,38 @@
             validateEmail();
         }
 
-        document.getElementById('officerForm').addEventListener('submit', function (e) {
-            if (!validateEmail()) {
-                e.preventDefault();
-                emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
+        const form = document.getElementById('officerForm');
+        if (form) {
+            // Disable default browser validation bubbles to handle it manually with Bootstrap
+            form.setAttribute('novalidate', '');
+
+            form.addEventListener('submit', function (e) {
+                let isValid = true;
+
+                // 1. Check Custom Email Validation
+                if (!validateEmail()) {
+                    isValid = false;
+                }
+
+                // 2. Check Native HTML Validation (patterns, required, etc.)
+                if (!form.checkValidity()) {
+                    isValid = false;
+                    form.classList.add('was-validated'); // Triggers Bootstrap :invalid styles
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Scroll to the first error
+                    const firstError = form.querySelector(':invalid, .is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus(); // Ensure focus if possible
+                    }
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

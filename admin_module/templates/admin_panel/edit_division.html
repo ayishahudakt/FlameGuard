@@ -26,15 +26,16 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-                <form method="post" id="divisionForm" class="needs-validation">
+                <form method="post" id="divisionForm">
                     {% csrf_token %}
 
+                    <!-- Division Name -->
                     <div class="mb-4">
-                        <label for="{{ form.name.id_for_label }}" class="form-label fw-bold text-dark small">{{
-                            form.name.label }}*</label>
+                        {{ form.name.label_tag }}
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i data-feather="type"
-                                    style="width: 16px;"></i></span>
+                            <span class="input-group-text bg-light border-0">
+                                <i data-feather="type" style="width: 16px;"></i>
+                            </span>
                             {{ form.name }}
                         </div>
                         {% if form.name.errors %}
@@ -42,16 +43,18 @@
                             {% for error in form.name.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
-                        <small class="form-text text-muted mt-2 d-block">Only alphabets and spaces (e.g., "Wayanad
-                            North")</small>
+                        <small class="form-text text-muted mt-2 d-block">
+                            Only alphabets and spaces (e.g., "Wayanad North")
+                        </small>
                     </div>
 
+                    <!-- Location -->
                     <div class="mb-4">
-                        <label for="{{ form.location.id_for_label }}"
-                            class="form-label fw-bold text-dark small">Location*</label>
+                        {{ form.location.label_tag }}
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i data-feather="map-pin"
-                                    style="width: 16px;"></i></span>
+                            <span class="input-group-text bg-light border-0">
+                                <i data-feather="map-pin" style="width: 16px;"></i>
+                            </span>
                             {{ form.location }}
                         </div>
                         {% if form.location.errors %}
@@ -59,13 +62,14 @@
                             {% for error in form.location.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
-                        <small class="form-text text-muted mt-2 d-block">Geographical region name (e.g.,
-                            "Palakkad")</small>
+                        <small class="form-text text-muted mt-2 d-block">
+                            Geographical region name (e.g., "Palakkad")
+                        </small>
                     </div>
 
+                    <!-- Description -->
                     <div class="mb-5">
-                        <label for="{{ form.description.id_for_label }}"
-                            class="form-label fw-bold text-dark small">Description</label>
+                        {{ form.description.label_tag }}
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0 align-items-start pt-2">
                                 <i data-feather="align-left" style="width: 16px;"></i>
@@ -79,11 +83,13 @@
                         {% endif %}
                     </div>
 
+                    <!-- Buttons -->
                     <div class="row g-3">
                         <div class="col-md-8">
                             <button type="submit"
                                 class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
-                                <i data-feather="check-circle" class="me-2" style="width: 18px;"></i> Update Division
+                                <i data-feather="check-circle" class="me-2" style="width: 18px;"></i>
+                                Update Division
                             </button>
                         </div>
                         <div class="col-md-4">
@@ -99,65 +105,39 @@
 </div>
 
 <style>
-    .bg-primary-bg {
-        background-color: var(--primary-bg) !important;
-    }
+.bg-primary-bg {
+    background-color: var(--primary-bg) !important;
+}
 
-    .form-control {
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
-        border: none !important;
-        background-color: #f8f9fa !important;
-    }
+.form-control {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: none !important;
+    background-color: #f8f9fa !important;
+}
 
-    .input-group-text {
-        border-radius: 10px 0 0 10px;
-    }
+.input-group-text {
+    border-radius: 10px 0 0 10px;
+}
 
-    .input-group>.form-control {
-        border-radius: 0 10px 10px 0 !important;
-    }
+.input-group > .form-control {
+    border-radius: 0 10px 10px 0 !important;
+}
 
-    .btn-primary {
-        font-weight: 600;
-        border-radius: 12px;
-    }
+.btn-primary {
+    font-weight: 600;
+    border-radius: 12px;
+}
 </style>
 
 <script>
-    // Existing validation logic
-    document.addEventListener('DOMContentLoaded', function () {
-        const nameInput = document.getElementById('{{ form.name.id_for_label }}');
-        const locationInput = document.getElementById('{{ form.location.id_for_label }}');
-
-        // Apply Bootstrap classes to raw Django form widgets
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
-                input.classList.add('form-control');
-            }
-        });
-
-        function validateAlphabeticInput(event) {
-            const char = event.key;
-            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', ' '];
-            const isAlphabet = /^[A-Za-z]$/.test(char);
-
-            if (!isAlphabet && !allowedKeys.includes(char)) {
-                event.preventDefault();
-                event.target.classList.add('is-invalid');
-                setTimeout(() => {
-                    event.target.classList.remove('is-invalid');
-                }, 500);
-            }
-        }
-
-        if (nameInput) {
-            nameInput.addEventListener('keydown', validateAlphabeticInput);
-        }
-        if (locationInput) {
-            locationInput.addEventListener('keydown', validateAlphabeticInput);
+document.addEventListener('DOMContentLoaded', function () {
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+            input.classList.add('form-control');
         }
     });
+});
 </script>
 {% endblock %}
