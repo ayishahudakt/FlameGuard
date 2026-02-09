@@ -1,0 +1,55 @@
+======================================================================
+DATABASE ALERT STATUS CHECK
+======================================================================
+
+=== FIRE ALERTS ===
+Total: 9
+  - ID 120: Station=South Wayanad, Severity=CRITICAL, Status=ACTIVE, Detected=2026-02-09 05:24:32.442261+00:00
+  - ID 119: Station=South Wayanad, Severity=CRITICAL, Status=ACTIVE, Detected=2026-02-09 05:24:17.435118+00:00
+  - ID 118: Station=South Wayanad, Severity=HIGH, Status=ACTIVE, Detected=2026-02-09 05:23:57.277122+00:00
+  - ID 117: Station=South Wayanad, Severity=MEDIUM, Status=ACTIVE, Detected=2026-02-09 05:21:51.832791+00:00
+  - ID 116: Station=South Wayanad, Severity=MEDIUM, Status=ACTIVE, Detected=2026-02-09 05:21:42.162160+00:00
+  - ID 115: Station=South Wayanad, Severity=MEDIUM, Status=ACTIVE, Detected=2026-02-09 05:21:31.765600+00:00
+  - ID 114: Station=South Wayanad, Severity=CRITICAL, Status=ACTIVE, Detected=2026-02-09 05:21:01.723193+00:00
+  - ID 113: Station=South Wayanad, Severity=CRITICAL, Status=ACTIVE, Detected=2026-02-09 05:20:51.640260+00:00
+  - ID 112: Station=South Wayanad, Severity=CRITICAL, Status=ACTIVE, Detected=2026-02-09 05:20:41.550118+00:00
+
+=== ANIMAL ALERTS ===
+Total: 5
+  - ID 14: Station=South Wayanad, Animal=Tiger, Panthera Tigris, Detected=2026-02-09 05:24:02.356820+00:00
+  - ID 13: Station=South Wayanad, Animal=Zebra, Detected=2026-02-09 05:23:32.184974+00:00
+  - ID 12: Station=South Wayanad, Animal=African Elephant, Loxodonta Africana, Detected=2026-02-09 05:23:22.181766+00:00
+  - ID 11: Station=South Wayanad, Animal=Cheetah, Chetah, Acinonyx Jubatus, Detected=2026-02-09 05:23:17.155156+00:00
+  - ID 10: Station=South Wayanad, Animal=Zebra, Detected=2026-02-09 05:23:02.173253+00:00
+
+=== HUMAN INTRUSION ALERTS ===
+Total: 17
+  - ID 408: Station=South Wayanad, Detected=2026-02-09 05:24:37.505020+00:00
+  - ID 407: Station=South Wayanad, Detected=2026-02-09 05:24:27.450272+00:00
+  - ID 406: Station=South Wayanad, Detected=2026-02-09 05:24:07.373244+00:00
+  - ID 405: Station=South Wayanad, Detected=2026-02-09 05:23:57.293298+00:00
+  - ID 404: Station=South Wayanad, Detected=2026-02-09 05:23:47.247469+00:00
+  - ID 403: Station=South Wayanad, Detected=2026-02-09 05:23:27.307790+00:00
+  - ID 402: Station=South Wayanad, Detected=2026-02-09 05:22:36.998038+00:00
+  - ID 401: Station=South Wayanad, Detected=2026-02-09 05:22:26.956210+00:00
+  - ID 400: Station=South Wayanad, Detected=2026-02-09 05:22:01.870890+00:00
+  - ID 399: Station=South Wayanad, Detected=2026-02-09 05:21:51.847611+00:00
+
+=== FOREST STATIONS ===
+Total: 4
+  - ID 1: Ranni Range Forest Office (RANNI)
+  - ID 2: South Wayanad (Wayanad)
+  - ID 3: Nilambur Range Forest Office (Nilambur)
+  - ID 6: munnar forest station (Munnar)
+
+=== FOREST OFFICERS ===
+Total: 2
+  - anshad: Station=Ranni Range Forest Office
+  - farzin: Station=South Wayanad
+
+======================================================================
+DIAGNOSIS:
+======================================================================
+
+Alert Stations (IDs): [2]
+Officer Stations (IDs): [1, 2]

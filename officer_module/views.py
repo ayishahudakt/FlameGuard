@@ -133,15 +133,50 @@ def submit_report(request):
     return render(request, 'officer/submit_report.html')
 
 
+@officer_required
 def view_fire_alerts(request):
     """View fire alerts for officer's station"""
-    try:
-        station = request.user.officer_profile.station
-        alerts = FireAlert.objects.filter(station=station).order_by('-detected_at')
-    except:
-        alerts = []
+    alerts = []
+    error_message = None
+    debug_info = {}
     
-    return render(request, 'officer/fire_alerts.html', {'alerts': alerts})
+    try:
+        # Check if user has officer profile
+        if not hasattr(request.user, 'officer_profile'):
+            error_message = "Your account does not have an officer profile. Please contact admin."
+            debug_info['has_profile'] = False
+        else:
+            officer_profile = request.user.officer_profile
+            station = officer_profile.station
+            debug_info['has_profile'] = True
+            debug_info['username'] = request.user.username
+            
+            # Check if officer has station assigned
+            if not station:
+                error_message = "No station assigned to your profile. Please contact admin to assign a station."
+                debug_info['has_station'] = False
+            else:
+                debug_info['has_station'] = True
+                debug_info['station_name'] = station.name
+                debug_info['station_id'] = station.id
+                
+                # Query alerts
+                alerts = FireAlert.objects.filter(station=station).order_by('-detected_at')
+                debug_info['alert_count'] = alerts.count()
+                
+    except AttributeError as e:
+        error_message = f"Profile error: {str(e)}"
+        debug_info['error'] = str(e)
+    except Exception as e:
+        error_message = f"Unexpected error: {str(e)}"
+        debug_info['error'] = str(e)
+    
+    context = {
+        'alerts': alerts,
+        'error_message': error_message,
+        'debug_info': debug_info,
+    }
+    return render(request, 'officer/fire_alerts.html', context)
 
 # ================================
 # 6. USER ALERTS
@@ -173,13 +208,47 @@ def send_user_alert(request):
 @officer_required
 def view_human_intrusion(request):
     """View human intrusion alerts"""
-    try:
-        station = request.user.officer_profile.station
-        intrusions = HumanIntrusionAlert.objects.filter(station=station).order_by('-detected_at')
-    except:
-        intrusions = []
+    intrusions = []
+    error_message = None
+    debug_info = {}
     
-    return render(request, 'officer/human_intrusion.html', {'intrusions': intrusions})
+    try:
+        # Check if user has officer profile
+        if not hasattr(request.user, 'officer_profile'):
+            error_message = "Your account does not have an officer profile. Please contact admin."
+            debug_info['has_profile'] = False
+        else:
+            officer_profile = request.user.officer_profile
+            station = officer_profile.station
+            debug_info['has_profile'] = True
+            debug_info['username'] = request.user.username
+            
+            # Check if officer has station assigned
+            if not station:
+                error_message = "No station assigned to your profile. Please contact admin to assign a station."
+                debug_info['has_station'] = False
+            else:
+                debug_info['has_station'] = True
+                debug_info['station_name'] = station.name
+                debug_info['station_id'] = station.id
+                
+                # Query alerts
+                intrusions = HumanIntrusionAlert.objects.filter(station=station).order_by('-detected_at')
+                debug_info['alert_count'] = intrusions.count()
+                
+    except AttributeError as e:
+        error_message = f"Profile error: {str(e)}"
+        debug_info['error'] = str(e)
+    except Exception as e:
+        error_message = f"Unexpected error: {str(e)}"
+        debug_info['error'] = str(e)
+    
+    context = {
+        'intrusions': intrusions,
+        'error_message': error_message,
+        'debug_info': debug_info,
+    }
+    return render(request, 'officer/human_intrusion.html', context)
 
 @officer_required
 def update_intrusion_status(request, pk):
@@ -223,14 +292,49 @@ def view_notifications(request):
 @officer_required
 def view_animal_alerts(request):
     """View animal detection alerts for officer's station"""
-    try:
-        station = request.user.officer_profile.station
-        from .models import AnimalAlert
-        alerts = AnimalAlert.objects.filter(station=station).order_by('-detected_at')
-    except:
-        alerts = []
+    from .models import AnimalAlert
     
-    return render(request, 'officer/animal_alerts.html', {'alerts': alerts})
+    alerts = []
+    error_message = None
+    debug_info = {}
+    
+    try:
+        # Check if user has officer profile
+        if not hasattr(request.user, 'officer_profile'):
+            error_message = "Your account does not have an officer profile. Please contact admin."
+            debug_info['has_profile'] = False
+        else:
+            officer_profile = request.user.officer_profile
+            station = officer_profile.station
+            debug_info['has_profile'] = True
+            debug_info['username'] = request.user.username
+            
+            # Check if officer has station assigned
+            if not station:
+                error_message = "No station assigned to your profile. Please contact admin to assign a station."
+                debug_info['has_station'] = False
+            else:
+                debug_info['has_station'] = True
+                debug_info['station_name'] = station.name
+                debug_info['station_id'] = station.id
+                
+                # Query alerts
+                alerts = AnimalAlert.objects.filter(station=station).order_by('-detected_at')
+                debug_info['alert_count'] = alerts.count()
+                
+    except AttributeError as e:
+        error_message = f"Profile error: {str(e)}"
+        debug_info['error'] = str(e)
+    except Exception as e:
+        error_message = f"Unexpected error: {str(e)}"
+        debug_info['error'] = str(e)
+    
+    context = {
+        'alerts': alerts,
+        'error_message': error_message,
+        'debug_info': debug_info,
+    }
+    return render(request, 'officer/animal_alerts.html', context)
 
 # ================================
 # 10. MY REPORTS
