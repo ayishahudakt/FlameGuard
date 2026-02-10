@@ -280,28 +280,6 @@
     </div>
     {% endif %}
 
-    <!-- Debug Information -->
-    {% if debug_info %}
-    <div class="alert alert-info" role="alert">
-        <strong><i class="bi bi-info-circle-fill"></i> Debug Information:</strong>
-        <ul class="mb-0 mt-2">
-            {% if debug_info.username %}
-            <li>Logged in as: <strong>{{ debug_info.username }}</strong></li>
-            {% endif %}
-            <li>Has Officer Profile: <strong>{% if debug_info.has_profile %}✓ Yes{% else %}✗ No{% endif %}</strong></li>
-            {% if debug_info.has_station %}
-            <li>Station: <strong>{{ debug_info.station_name }} (ID: {{ debug_info.station_id }})</strong></li>
-            <li>Human Intrusion Alerts Found: <strong>{{ debug_info.alert_count }}</strong></li>
-            {% else %}
-            <li>Station Assigned: <strong>✗ No</strong></li>
-            {% endif %}
-            {% if debug_info.error %}
-            <li>Error Details: <code>{{ debug_info.error }}</code></li>
-            {% endif %}
-        </ul>
-    </div>
-    {% endif %}
-
     <!-- Alerts Grid -->
     <div class="row">
         {% if intrusions %}

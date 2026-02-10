@@ -54,4 +54,10 @@ urlpatterns = [
     # Fire Alerts
     path('fire-alerts/', views.view_fire_alerts, name='view_fire_alerts'),
     path('fire-alerts/update/<int:pk>/', views.update_fire_alert, name='update_fire_alert'),
+    
+    # Animal Alerts
+    path('animal-alerts/', views.view_animal_alerts, name='admin_view_animal_alerts'),
+    
+    # Human Intrusion Alerts
+    path('human-intrusion-alerts/', views.view_human_intrusion_alerts, name='admin_view_human_intrusion_alerts'),
 ]

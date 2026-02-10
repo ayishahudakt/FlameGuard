@@ -319,11 +319,7 @@ class CompleteDetector:
         print(f"     Severity: {severity}")
         print(f"     Confidence: {confidence*100:.1f}%")
         print(f"     Location: {location}")
-        
-        self.notify_officers(
-            f"🔥 Fire at {self.station.name}",
-            f"Severity: {severity}, Conf: {confidence*100:.1f}%"
-        )
+        print(f"     ℹ️  Officers can view this alert in their Fire Alerts page")
     
     def create_animal_alert(self, animals, confidence):
         """Create animal alert"""
@@ -345,11 +341,7 @@ class CompleteDetector:
         print(f"     Animals: {animal_list}")
         print(f"     Confidence: {confidence*100:.1f}%")
         print(f"     Location: {location}")
-        
-        self.notify_officers(
-            f"🐅 Wildlife: {animal_list}",
-            f"Location: {location}, Conf: {confidence*100:.1f}%"
-        )
+        print(f"     ℹ️  Officers can view this alert in their Animal Detection page")
     
     def create_human_alert(self, confidence):
         """Create human intrusion alert"""
@@ -365,11 +357,7 @@ class CompleteDetector:
         print(f"     Alert ID: {alert.id}")
         print(f"     Confidence: {confidence*100:.1f}%")
         print(f"     Location: {location}")
-        
-        self.notify_officers(
-            f"🚶 Intrusion at {self.station.name}",
-            f"Location: {location}, Conf: {confidence*100:.1f}%"
-        )
+        print(f"     ℹ️  Officers can view this alert in their Human Intrusions page")
     
     def notify_officers(self, title, message):
         """Send notifications"""

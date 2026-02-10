@@ -379,6 +379,20 @@ def view_fire_alerts(request):
     return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
 
 @admin_required
+def view_animal_alerts(request):
+    """View all animal detection alerts"""
+    from officer_module.models import AnimalAlert
+    alerts = AnimalAlert.objects.select_related('station').all().order_by('-detected_at')
+    return render(request, 'admin_panel/animal_alerts.html', {'alerts': alerts})
+
+@admin_required
+def view_human_intrusion_alerts(request):
+    """View all human intrusion alerts"""
+    from officer_module.models import HumanIntrusionAlert
+    alerts = HumanIntrusionAlert.objects.select_related('station').all().order_by('-detected_at')
+    return render(request, 'admin_panel/human_intrusion_alerts.html', {'alerts': alerts})
+
+@admin_required
 def update_fire_alert(request, pk):
     """Update fire alert status"""
     alert = get_object_or_404(FireAlert, pk=pk)

@@ -2,54 +2,167 @@
 
 {% block title %}Update Intrusion - FLAME Guard Officer{% endblock %}
 
+{% block extra_css %}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
+
+<style>
+    /* Modern Color Palette */
+    :root {
+        --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        --gradient-secondary: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        --gradient-danger: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        --gradient-info: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    body { font-family: 'Roboto', sans-serif; }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+    }
+
+    .page-container { animation: fadeInUp 0.6s ease-out; }
+
+    .page-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+    }
+
+    .modern-info-card,
+    .modern-form-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 1.5rem;
+    }
+
+    .modern-card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+    }
+
+    .modern-card-body { padding: 2rem; }
+
+    .status-badge {
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    .status-new { background: var(--gradient-danger); }
+    .status-investigating { background: var(--gradient-warning); }
+    .status-resolved { background: var(--gradient-success); }
+    .status-false_alarm { background: var(--gradient-info); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-pencil"></i> Update Intrusion Status</h1>
-</div>
+<div class="page-container">
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-3">
-            <div class="card-header">Intrusion Details</div>
-            <div class="card-body">
-                <p><strong>Station:</strong> {{ intrusion.station.name }}</p>
-                <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y H:i" }}</p>
-                <p><strong>Current Status:</strong> <span class="badge bg-warning">{{ intrusion.get_status_display
-                        }}</span></p>
-            </div>
-        </div>
+    <h1 class="page-header">
+        <i class="bi bi-pencil"></i> Update Intrusion Status
+    </h1>
 
-        <div class="card">
-            <div class="card-header">Update Status</div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="status" class="form-label">New Status *</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="NEW" {% if intrusion.status=='NEW' %}selected{% endif %}>New</option>
-                            <option value="INVESTIGATING" {% if intrusion.status=='INVESTIGATING' %}selected{% endif %}>
-                                Investigating</option>
-                            <option value="RESOLVED" {% if intrusion.status=='RESOLVED' %}selected{% endif %}>Resolved
-                            </option>
-                            <option value="FALSE_ALARM" {% if intrusion.status=='FALSE_ALARM' %}selected{% endif %}>
-                                False Alarm</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="4">{{ intrusion.notes }}</textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Update
-                        </button>
-                        <a href="{% url 'view_human_intrusion' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <!-- Intrusion Details -->
+            <div class="modern-info-card">
+                <div class="modern-card-header">
+                    <i class="bi bi-info-circle"></i> Intrusion Details
+                </div>
+                <div class="modern-card-body">
+                    <p><strong>Station:</strong> {{ intrusion.station.name }}</p>
+                    <p><strong>Detected:</strong> {{ intrusion.detected_at|date:"M d, Y H:i" }}</p>
+                    <p>
+                        <strong>Current Status:</strong>
+                        <span class="status-badge
+                            {% if intrusion.status == 'NEW' %}status-new
+                            {% elif intrusion.status == 'INVESTIGATING' %}status-investigating
+                            {% elif intrusion.status == 'RESOLVED' %}status-resolved
+                            {% else %}status-false_alarm
+                            {% endif %}">
+                            {{ intrusion.get_status_display }}
+                        </span>
+                    </p>
+                </div>
             </div>
+
+            <!-- Update Form -->
+            <div class="modern-form-card">
+                <div class="modern-card-header">
+                    <i class="bi bi-pencil-square"></i> Update Status
+                </div>
+                <div class="modern-card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="status" class="modern-label">
+                                New Status <span style="color:#ef4444">*</span>
+                            </label>
+
+                            <select class="form-select modern-select" id="status" name="status" required>
+                                <option value="NEW"
+                                    {% if intrusion.status == 'NEW' %}selected{% endif %}>
+                                    New
+                                </option>
+
+                                <option value="INVESTIGATING"
+                                    {% if intrusion.status == 'INVESTIGATING' %}selected{% endif %}>
+                                    Investigating
+                                </option>
+
+                                <option value="RESOLVED"
+                                    {% if intrusion.status == 'RESOLVED' %}selected{% endif %}>
+                                    Resolved
+                                </option>
+
+                                <option value="FALSE_ALARM"
+                                    {% if intrusion.status == 'FALSE_ALARM' %}selected{% endif %}>
+                                    False Alarm
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="modern-label">Notes</label>
+                            <textarea class="form-control modern-textarea"
+                                id="notes" name="notes" rows="4">{{ intrusion.notes }}</textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="btn modern-btn modern-btn-success">
+                                <i class="bi bi-check-circle-fill"></i> Update Status
+                            </button>
+                            <a href="{% url 'view_human_intrusion' %}"
+                               class="btn modern-btn modern-btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

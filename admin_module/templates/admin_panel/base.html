@@ -99,6 +99,19 @@
                         <span>Fire Alerts</span>
                     </a>
                 </li>
+                <li class="{% if request.resolver_match.url_name == 'admin_view_animal_alerts' %}active{% endif %}">
+                    <a href="{% url 'admin_view_animal_alerts' %}">
+                        <i data-feather="gitlab"></i>
+                        <span>Animal Alerts</span>
+                    </a>
+                </li>
+                <li
+                    class="{% if request.resolver_match.url_name == 'admin_view_human_intrusion_alerts' %}active{% endif %}">
+                    <a href="{% url 'admin_view_human_intrusion_alerts' %}">
+                        <i data-feather="user-x"></i>
+                        <span>Human Intrusions</span>
+                    </a>
+                </li>
             </ul>
         </nav>
 

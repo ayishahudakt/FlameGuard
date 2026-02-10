@@ -1,0 +1,172 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Animal Detection Alerts - FLAME Guard Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Animal Detection Alerts</h1>
+    <span class="badge bg-success-subtle text-success px-3 py-2 border border-success-subtle rounded-pill">
+        <i data-feather="gitlab" class="me-1" style="width: 14px;"></i>
+        Wildlife Monitoring Active
+    </span>
+</div>
+
+<div class="row">
+    {% if alerts %}
+    {% for alert in alerts %}
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm overflow-hidden alert-card-modern">
+            <div class="severity-strip {{ alert.severity|lower }}"></div>
+
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon {{ alert.severity|lower }} me-2 mb-0"
+                        style="width: 32px; height: 32px; font-size: 0.9rem;">
+                        <i data-feather="gitlab"></i>
+                    </div>
+                    <span class="fw-bold">{{ alert.station.name }}</span>
+                </div>
+                <span class="badge border bg-light text-dark">{{ alert.get_severity_display }}</span>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <p class="mb-1 fw-bold text-primary">{{ alert.animal_type }}</p>
+                    <p class="mb-0 small text-muted">Confidence: {{ alert.confidence_score|floatformat:1 }}%</p>
+                </div>
+
+                <div class="mb-3 d-flex align-items-center text-muted small">
+                    <i data-feather="clock" class="me-2" style="width: 14px;"></i>
+                    Detected: {{ alert.detected_at|date:"M d, Y H:i" }}
+                </div>
+
+                <div class="mb-3 d-flex align-items-start">
+                    <i data-feather="map-pin" class="me-2 text-primary mt-1" style="width: 14px;"></i>
+                    <div>
+                        <p class="mb-0 small text-muted">Location Details</p>
+                        <p class="mb-0 fw-medium">{{ alert.location_details|default:"GPS coordinates not available" }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
+                    <span class="small text-muted">Current Status</span>
+                    <span
+                        class="badge bg-{{ alert.status|lower }} border border-{{ alert.status|lower }}-subtle text-{{ alert.status|lower }}">
+                        {{ alert.get_status_display }}
+                    </span>
+                </div>
+
+                {% if alert.status != 'RESOLVED' %}
+                <div class="mt-3">
+                    <a href="{% url 'update_fire_alert' alert.id %}"
+                        class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                        <i data-feather="edit-3" class="me-2" style="width: 14px;"></i>
+                        Update Status
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if alert.status == 'RESOLVED' and alert.resolved_by %}
+                <div class="mt-3 pt-3 border-top">
+                    <div class="d-flex align-items-center">
+                        <img src="https://ui-avatars.com/api/?name={{ alert.resolved_by.user.username }}&background=dcfce7&color=166534"
+                            alt="" class="rounded-circle me-2" width="24" height="24">
+                        <div class="small">
+                            <span class="text-muted">Resolved by</span>
+                            <span class="fw-bold">{{ alert.resolved_by.user.username }}</span>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0 mt-1 ps-4 ms-2 small" style="font-size: 0.75rem;">
+                        at {{ alert.resolved_at|date:"M d, H:i" }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 py-5 text-center">
+        <div class="stat-icon primary mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
+            <i data-feather="gitlab"></i>
+        </div>
+        <h5 class="fw-bold text-muted">No animal alerts detected</h5>
+        <p class="text-muted">The forest is currently safe. All sensors operational.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .alert-card-modern {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .alert-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .severity-strip {
+        height: 4px;
+        width: 100%;
+    }
+
+    .severity-strip.critical {
+        background-color: var(--danger);
+    }
+
+    .severity-strip.high {
+        background-color: var(--warning);
+    }
+
+    .severity-strip.medium {
+        background-color: var(--info);
+    }
+
+    .severity-strip.low {
+        background-color: var(--success);
+    }
+
+    /* Status badge colors */
+    .bg-new {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+        border-color: #fecaca !important;
+    }
+
+    .bg-acknowledged {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+        border-color: #fde68a !important;
+    }
+
+    .bg-investigating {
+        background-color: #e0f2fe !important;
+        color: #075985 !important;
+        border-color: #bae6fd !important;
+    }
+
+    .bg-resolved {
+        background-color: #dcfce7 !important;
+        color: #166534 !important;
+        border-color: #bbf7d0 !important;
+    }
+
+    .text-new {
+        color: #dc2626 !important;
+    }
+
+    .text-acknowledged {
+        color: #d97706 !important;
+    }
+
+    .text-investigating {
+        color: #0284c7 !important;
+    }
+
+    .text-resolved {
+        color: #16a34a !important;
+    }
+</style>
+{% endblock %}
