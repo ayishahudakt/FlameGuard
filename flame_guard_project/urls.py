@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin-panel/', include('admin_module.urls')),  # Custom admin module
     path('officer-panel/', include('officer_module.urls')),  # Officer module
     path('api/camera/', include('camera_module.urls')),  # AI Detection API
+    path('api/', include('user_module.urls')),  # User Mobile App API
 ]
 
 # Serve media files in development
