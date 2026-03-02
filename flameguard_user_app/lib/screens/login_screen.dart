@@ -70,17 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.local_fire_department,
-                      size: 64,
-                      color: Colors.white,
-                    ),
+                  Image.asset(
+                    'assets/images/app_icon.png',
+                    width: 110,
+                    height: 110,
                   ),
                   const SizedBox(height: 16),
                   const Text(

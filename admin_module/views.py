@@ -85,33 +85,42 @@ def add_division(request):
     if request.method == 'POST':
         form = ForestDivisionForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Forest Division added successfully!')
-            return redirect('manage_divisions')
+            name = form.cleaned_data['name'].strip()
+            # Case-insensitive uniqueness check
+            if ForestDivision.objects.filter(name__iexact=name).exists():
+                messages.error(request, f'A division named "{name}" already exists. Division names must be unique.')
+            else:
+                form.save()
+                messages.success(request, 'Forest Division added successfully!')
+                return redirect('manage_divisions')
         else:
-            # Form has validation errors, they will be displayed in template
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ForestDivisionForm()
-    
+
     return render(request, 'admin_panel/add_division.html', {'form': form})
 
 @admin_required
 def edit_division(request, pk):
     """Edit forest division"""
     division = get_object_or_404(ForestDivision, pk=pk)
-    
+
     if request.method == 'POST':
         form = ForestDivisionForm(request.POST, instance=division)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Division updated successfully!')
-            return redirect('manage_divisions')
+            name = form.cleaned_data['name'].strip()
+            # Case-insensitive uniqueness check — exclude the current record
+            if ForestDivision.objects.filter(name__iexact=name).exclude(pk=pk).exists():
+                messages.error(request, f'A division named "{name}" already exists. Division names must be unique.')
+            else:
+                form.save()
+                messages.success(request, 'Division updated successfully!')
+                return redirect('manage_divisions')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ForestDivisionForm(instance=division)
-    
+
     return render(request, 'admin_panel/edit_division.html', {'form': form, 'division': division})
 
 @admin_required
@@ -137,32 +146,52 @@ def add_station(request):
     if request.method == 'POST':
         form = ForestStationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Forest Station added successfully!')
-            return redirect('manage_stations')
+            name = form.cleaned_data['name'].strip()
+            contact_number = form.cleaned_data['contact_number'].strip()
+
+            # Case-insensitive duplicate name check
+            if ForestStation.objects.filter(name__iexact=name).exists():
+                messages.error(request, f'A station named "{name}" already exists. Station names must be unique.')
+            # Duplicate contact number check
+            elif ForestStation.objects.filter(contact_number=contact_number).exists():
+                messages.error(request, f'The contact number "{contact_number}" is already used by another station.')
+            else:
+                form.save()
+                messages.success(request, 'Forest Station added successfully!')
+                return redirect('manage_stations')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ForestStationForm()
-    
+
     return render(request, 'admin_panel/add_station.html', {'form': form})
 
 @admin_required
 def edit_station(request, pk):
     """Edit forest station"""
     station = get_object_or_404(ForestStation, pk=pk)
-    
+
     if request.method == 'POST':
         form = ForestStationForm(request.POST, instance=station)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Station updated successfully!')
-            return redirect('manage_stations')
+            name = form.cleaned_data['name'].strip()
+            contact_number = form.cleaned_data['contact_number'].strip()
+
+            # Case-insensitive duplicate name check (exclude current station)
+            if ForestStation.objects.filter(name__iexact=name).exclude(pk=pk).exists():
+                messages.error(request, f'A station named "{name}" already exists. Station names must be unique.')
+            # Duplicate contact number check (exclude current station)
+            elif ForestStation.objects.filter(contact_number=contact_number).exclude(pk=pk).exists():
+                messages.error(request, f'The contact number "{contact_number}" is already used by another station.')
+            else:
+                form.save()
+                messages.success(request, 'Station updated successfully!')
+                return redirect('manage_stations')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ForestStationForm(instance=station)
-    
+
     return render(request, 'admin_panel/edit_station.html', {'form': form, 'station': station})
 
 @admin_required
@@ -250,61 +279,7 @@ def add_preserved_animal(request):
     animals = Animal.objects.all()
     return render(request, 'admin_panel/add_preserved_animal.html', {'form': form, 'animals': animals})
 
-# ================================
-# 7. FOREST OFFICER MANAGEMENT
-# ================================
-@admin_required
-def manage_officers(request):
-    """List all forest officers"""
-    officers = ForestOfficer.objects.select_related('user', 'station').all()
-    return render(request, 'admin_panel/officers.html', {'officers': officers})
-
-@admin_required
-def add_officer(request):
-    """Add new forest officer"""
-    if request.method == 'POST':
-        form = ForestOfficerForm(request.POST)
-        if form.is_valid():
-            # Create user account
-            user = CustomUser.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                password=form.cleaned_data['password'],
-                user_type='OFFICER',
-                phone_number=form.cleaned_data['phone_number']
-            )
-            
-            # Create officer profile
-            ForestOfficer.objects.create(
-                user=user,
-                station=form.cleaned_data['station'],
-                designation=form.cleaned_data['designation'],
-                badge_number=form.cleaned_data['badge_number']
-            )
-            messages.success(request, 'Forest Officer added successfully!')
-            return redirect('manage_officers')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = ForestOfficerForm()
-    
-    stations = ForestStation.objects.all()
-    return render(request, 'admin_panel/add_officer.html', {'form': form, 'stations': stations})
-
-@admin_required
-def allocate_officer(request, pk):
-    """Allocate officer to a station"""
-    officer = get_object_or_404(ForestOfficer, pk=pk)
-    
-    if request.method == 'POST':
-        station_id = request.POST.get('station')
-        officer.station_id = station_id if station_id else None
-        officer.save()
-        messages.success(request, 'Officer allocated successfully!')
-        return redirect('manage_officers')
-    
-    stations = ForestStation.objects.all()
-    return render(request, 'admin_panel/allocate_officer.html', {'officer': officer, 'stations': stations})
+# NOTE: manage_officers, add_officer, and allocate_officer are defined later in this file with full validation.
 
 # ================================
 # 8. COMPLAINT MANAGEMENT
@@ -475,34 +450,46 @@ def manage_officers(request):
 def add_officer(request):
     """Add new forest officer"""
     if request.method == 'POST':
-        # Create user account
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        phone_number = request.POST.get('phone_number')
-        
-        user = CustomUser.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            user_type='OFFICER',
-            phone_number=phone_number
-        )
-        
-        # Create officer profile
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        phone_number = request.POST.get('phone_number', '').strip()
         station_id = request.POST.get('station')
-        designation = request.POST.get('designation')
-        badge_number = request.POST.get('badge_number')
-        
-        ForestOfficer.objects.create(
-            user=user,
-            station_id=station_id if station_id else None,
-            designation=designation,
-            badge_number=badge_number
-        )
-        messages.success(request, 'Forest Officer added successfully!')
-        return redirect('manage_officers')
-    
+        designation = request.POST.get('designation', '').strip()
+        badge_number = request.POST.get('badge_number', '').strip()
+
+        errors = []
+
+        # Uniqueness checks
+        if CustomUser.objects.filter(username__iexact=username).exists():
+            errors.append(f'Username "{username}" is already taken.')
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            errors.append(f'Email "{email}" is already registered.')
+        if CustomUser.objects.filter(phone_number=phone_number).exists():
+            errors.append(f'Phone number "{phone_number}" is already in use.')
+        if badge_number and ForestOfficer.objects.filter(badge_number__iexact=badge_number).exists():
+            errors.append(f'Badge number "{badge_number}" is already assigned to another officer.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            user = CustomUser.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                user_type='OFFICER',
+                phone_number=phone_number
+            )
+            ForestOfficer.objects.create(
+                user=user,
+                station_id=station_id if station_id else None,
+                designation=designation,
+                badge_number=badge_number
+            )
+            messages.success(request, 'Forest Officer added successfully!')
+            return redirect('manage_officers')
+
     stations = ForestStation.objects.all()
     return render(request, 'admin_panel/add_officer.html', {'stations': stations})
 
@@ -629,95 +616,9 @@ def edit_preserved_animal(request, pk):
 def delete_preserved_animal(request, pk):
     """Delete preserved animal"""
     preserved = get_object_or_404(PreservedAnimal, pk=pk)
-# 6. PRESERVED ANIMAL MANAGEMENT
-# ================================
-@admin_required
-def manage_preserved_animals(request):
-    """List all preserved animals"""
-    preserved = PreservedAnimal.objects.select_related('animal').all()
-    return render(request, 'admin_panel/preserved_animals.html', {'preserved_animals': preserved})
-
-@admin_required
-def add_preserved_animal(request):
-    """Add animal to preserved list"""
-    if request.method == 'POST':
-        animal_id = request.POST.get('animal')
-        preservation_status = request.POST.get('preservation_status')
-        threat_level = request.POST.get('threat_level')
-        population_estimate = request.POST.get('population_estimate')
-        conservation_notes = request.POST.get('conservation_notes')
-        
-        PreservedAnimal.objects.create(
-            animal_id=animal_id,
-            preservation_status=preservation_status,
-            threat_level=threat_level,
-            population_estimate=population_estimate if population_estimate else None,
-            conservation_notes=conservation_notes
-        )
-        messages.success(request, 'Preserved animal added successfully!')
-        return redirect('manage_preserved_animals')
-    
-    animals = Animal.objects.all()
-    return render(request, 'admin_panel/add_preserved_animal.html', {'animals': animals})
-
-# ================================
-# 7. FOREST OFFICER MANAGEMENT
-# ================================
-@admin_required
-def manage_officers(request):
-    """List all forest officers"""
-    officers = ForestOfficer.objects.select_related('user', 'station').all()
-    return render(request, 'admin_panel/officers.html', {'officers': officers})
-
-@admin_required
-def add_officer(request):
-    """Add new forest officer"""
-    if request.method == 'POST':
-        # Create user account
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        phone_number = request.POST.get('phone_number')
-        
-        user = CustomUser.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            user_type='OFFICER',
-            phone_number=phone_number
-        )
-        
-        # Create officer profile
-        station_id = request.POST.get('station')
-        designation = request.POST.get('designation')
-        badge_number = request.POST.get('badge_number')
-        
-        ForestOfficer.objects.create(
-            user=user,
-            station_id=station_id if station_id else None,
-            designation=designation,
-            badge_number=badge_number
-        )
-        messages.success(request, 'Forest Officer added successfully!')
-        return redirect('manage_officers')
-    
-    stations = ForestStation.objects.all()
-    return render(request, 'admin_panel/add_officer.html', {'stations': stations})
-
-@admin_required
-def allocate_officer(request, pk):
-    """Allocate officer to a station"""
-    officer = get_object_or_404(ForestOfficer, pk=pk)
-    
-    if request.method == 'POST':
-        station_id = request.POST.get('station')
-        officer.station_id = station_id if station_id else None
-        officer.save()
-        messages.success(request, 'Officer allocated successfully!')
-        return redirect('manage_officers')
-    
-    stations = ForestStation.objects.all()
-    return render(request, 'admin_panel/allocate_officer.html', {'officer': officer, 'stations': stations})
+    preserved.delete()
+    messages.success(request, 'Preserved animal removed successfully!')
+    return redirect('manage_preserved_animals')
 
 # ================================
 # 8. COMPLAINT MANAGEMENT
@@ -833,28 +734,49 @@ def delete_preserved_animal(request, pk):
 def edit_officer(request, pk):
     """Edit forest officer"""
     officer = get_object_or_404(ForestOfficer, pk=pk)
-    
+    user_pk = officer.user.pk
+
     if request.method == 'POST':
         form = ForestOfficerEditForm(request.POST)
         if form.is_valid():
-            # Update user details
-            officer.user.username = form.cleaned_data['username']
-            officer.user.email = form.cleaned_data['email']
-            officer.user.phone_number = form.cleaned_data['phone_number']
-            officer.user.save()
-            
-            # Update officer details
-            officer.station = form.cleaned_data['station']
-            officer.designation = form.cleaned_data['designation']
-            officer.badge_number = form.cleaned_data['badge_number']
-            officer.save()
-            
-            messages.success(request, 'Officer updated successfully!')
-            return redirect('manage_officers')
+            username = form.cleaned_data['username'].strip()
+            email = form.cleaned_data['email'].strip()
+            phone_number = form.cleaned_data['phone_number'].strip()
+            badge_number = form.cleaned_data['badge_number'].strip()
+
+            errors = []
+
+            # Uniqueness checks (exclude the current officer's own user record)
+            if CustomUser.objects.filter(username__iexact=username).exclude(pk=user_pk).exists():
+                errors.append(f'Username "{username}" is already taken.')
+            if CustomUser.objects.filter(email__iexact=email).exclude(pk=user_pk).exists():
+                errors.append(f'Email "{email}" is already registered.')
+            if CustomUser.objects.filter(phone_number=phone_number).exclude(pk=user_pk).exists():
+                errors.append(f'Phone number "{phone_number}" is already in use.')
+            if badge_number and ForestOfficer.objects.filter(badge_number__iexact=badge_number).exclude(pk=pk).exists():
+                errors.append(f'Badge number "{badge_number}" is already assigned to another officer.')
+
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+            else:
+                # Update user details
+                officer.user.username = username
+                officer.user.email = email
+                officer.user.phone_number = phone_number
+                officer.user.save()
+
+                # Update officer profile
+                officer.station = form.cleaned_data['station']
+                officer.designation = form.cleaned_data['designation']
+                officer.badge_number = badge_number
+                officer.save()
+
+                messages.success(request, 'Officer updated successfully!')
+                return redirect('manage_officers')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        # Pre-fill form with existing data
         initial_data = {
             'username': officer.user.username,
             'email': officer.user.email,
@@ -864,7 +786,7 @@ def edit_officer(request, pk):
             'badge_number': officer.badge_number,
         }
         form = ForestOfficerEditForm(initial=initial_data)
-    
+
     stations = ForestStation.objects.all()
     return render(request, 'admin_panel/edit_officer.html', {'officer': officer, 'stations': stations, 'form': form})
 

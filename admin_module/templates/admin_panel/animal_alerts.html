@@ -57,15 +57,7 @@
                     </span>
                 </div>
 
-                {% if alert.status != 'RESOLVED' %}
-                <div class="mt-3">
-                    <a href="{% url 'update_fire_alert' alert.id %}"
-                        class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                        <i data-feather="edit-3" class="me-2" style="width: 14px;"></i>
-                        Update Status
-                    </a>
-                </div>
-                {% endif %}
+
 
                 {% if alert.status == 'RESOLVED' and alert.resolved_by %}
                 <div class="mt-3 pt-3 border-top">

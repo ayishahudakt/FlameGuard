@@ -2,12 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import re
+import json
 from django.utils import timezone
 from django.db.models import Q
-from admin_module.models import (CustomUser, ForestStation, Complaint, 
+from admin_module.models import (CustomUser, ForestStation, Complaint,
                                  Notification, Report, FireAlert)
-from .models import ForestOfficer, UserAlert, HumanIntrusionAlert
+from .models import ForestOfficer, UserAlert, HumanIntrusionAlert, UserNotification
 
 # ================================
 # HELPER DECORATOR
@@ -352,43 +355,183 @@ def view_my_reports(request):
 # ================================
 # 11. FIRE ALERT STATUS UPDATE
 # ================================
+
+def _notify_division_users(fire_alert, notif_type='STATUS_UPDATE'):
+    """
+    Helper: create UserNotification entries for all users in the same
+    division as the given fire alert.
+    Returns the count of users notified.
+    """
+    division = fire_alert.station.division if fire_alert.station else None
+    if not division:
+        return 0
+
+    users_in_division = CustomUser.objects.filter(
+        user_type='USER',
+        division=division
+    )
+
+    if notif_type == 'FIRE_ALERT':
+        title = f'🔥 Fire Alert – {division.name}'
+        body = (
+            f'A fire alert has been issued for {fire_alert.station.name}.\n'
+            f'Severity: {fire_alert.severity} | Status: {fire_alert.status}\n'
+            f'Time: {fire_alert.detected_at.strftime("%d %b %Y, %I:%M %p")}'
+        )
+    else:
+        title = f'🔥 Fire Alert Update – {division.name}'
+        body = (
+            f'Status updated for {fire_alert.station.name}.\n'
+            f'Severity: {fire_alert.severity} | New Status: {fire_alert.status}\n'
+            f'Time: {timezone.now().strftime("%d %b %Y, %I:%M %p")}'
+        )
+
+    notifications = [
+        UserNotification(
+            fire_alert=fire_alert,
+            recipient=user,
+            title=title,
+            body=body,
+            notif_type=notif_type,
+        )
+        for user in users_in_division
+    ]
+    UserNotification.objects.bulk_create(notifications)
+    return len(notifications)
+
+
 @officer_required
 def update_fire_alert_status(request, pk):
-    """Update fire alert status"""
+    """Update fire alert status and auto-notify division users."""
     alert = get_object_or_404(FireAlert, pk=pk)
-    
+
     if request.method == 'POST':
         status = request.POST.get('status')
         alert.status = status
-        
+
         if status == 'RESOLVED':
             alert.resolved_at = timezone.now()
             try:
                 alert.resolved_by = request.user.officer_profile
-            except:
+            except Exception:
                 pass
-        
+
         alert.save()
-        messages.success(request, 'Fire alert status updated successfully!')
+
+        # Auto-notify users in the same division
+        notified = _notify_division_users(alert, notif_type='STATUS_UPDATE')
+        messages.success(
+            request,
+            f'Fire alert status updated successfully! {notified} user(s) in {alert.station.division.name if alert.station and alert.station.division else "division"} notified.'
+        )
         return redirect('view_fire_alerts_officer')
-    
+
     return render(request, 'officer/update_fire_alert.html', {'alert': alert})
+
+
+@csrf_exempt
+def send_fire_alert_to_users(request, pk):
+    """
+    AJAX endpoint: manually send a fire alert notification to
+    all users in the same division as the alert.
+
+    NOTE: We do NOT use @officer_required here because that decorator
+    issues an HTTP redirect to the login page when the session has
+    expired, and the browser's fetch() then tries to parse that HTML
+    response as JSON — which throws a SyntaxError that lands in the
+    .catch() block as "Connection error."  Instead we return a proper
+    JSON 401 so the frontend can handle it gracefully.
+    """
+    # ── Auth check (returns JSON, not an HTML redirect) ──────────────
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Login required.'}, status=401)
+    if request.user.user_type != 'OFFICER':
+        return JsonResponse({'success': False, 'error': 'Officer access only.'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required.'}, status=405)
+
+    alert = get_object_or_404(FireAlert, pk=pk)
+
+    division = alert.station.division if alert.station else None
+    if not division:
+        return JsonResponse({'success': False, 'error': 'Alert has no division assigned.'}, status=400)
+
+    division_name = division.name
+
+    # ── Division-based users ──────────────────────────────────────────
+    users_in_division = CustomUser.objects.filter(
+        user_type='USER',
+        division=division
+    )
+
+    if not users_in_division.exists():
+        return JsonResponse({
+            'success': True,
+            'notified': 0,
+            'division': division_name,
+            'message': f'No users registered in {division_name} yet.'
+        })
+
+    # ── Prevent duplicate alerts for the same fire alert ─────────────
+    already_notified_ids = set(
+        UserNotification.objects.filter(
+            fire_alert=alert,
+            notif_type='FIRE_ALERT'
+        ).values_list('recipient_id', flat=True)
+    )
+
+    title = f'🔥 Fire Alert – {division_name}'
+    body = (
+        f'A fire alert has been issued at {alert.station.name}.\n'
+        f'Severity: {alert.severity} | Status: {alert.status}\n'
+        f'Time: {alert.detected_at.strftime("%d %b %Y, %I:%M %p")}'
+    )
+
+    new_notifications = [
+        UserNotification(
+            fire_alert=alert,
+            recipient=user,
+            title=title,
+            body=body,
+            notif_type='FIRE_ALERT',
+        )
+        for user in users_in_division
+        if user.id not in already_notified_ids
+    ]
+
+    UserNotification.objects.bulk_create(new_notifications)
+    notified = len(new_notifications)
+    skipped = len(already_notified_ids)
+
+    msg = f'Alert sent to {notified} user(s) in {division_name}.'
+    if skipped:
+        msg += f' ({skipped} already notified — no duplicates created.)'
+
+    return JsonResponse({
+        'success': True,
+        'notified': notified,
+        'skipped': skipped,
+        'division': division_name,
+        'message': msg,
+    })
+
 
 @officer_required
 def update_animal_alert_status(request, pk):
     """Update animal alert status"""
     from .models import AnimalAlert
     alert = get_object_or_404(AnimalAlert, pk=pk)
-    
+
     if request.method == 'POST':
         status = request.POST.get('status')
         alert.status = status
-        
+
         if status == 'RESOLVED':
             alert.resolved_at = timezone.now()
-        
+
         alert.save()
         messages.success(request, 'Animal alert status updated successfully!')
         return redirect('view_animal_alerts')
-    
+
     return render(request, 'officer/update_animal_alert.html', {'alert': alert})

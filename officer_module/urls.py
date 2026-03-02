@@ -20,6 +20,7 @@ urlpatterns = [
     # Fire Alerts
     path('fire-alerts/', views.view_fire_alerts, name='view_fire_alerts_officer'),
     path('fire-alerts/update/<int:pk>/', views.update_fire_alert_status, name='update_fire_alert_status'),
+    path('fire-alerts/send-alert/<int:pk>/', views.send_fire_alert_to_users, name='send_fire_alert_to_users'),
     
     # Animal Detection
     path('animal-alerts/', views.view_animal_alerts, name='view_animal_alerts'),

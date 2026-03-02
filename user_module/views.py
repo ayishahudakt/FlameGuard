@@ -168,7 +168,7 @@ def animal_alerts(request):
 
 
 # ============================================================
-# 5. NOTIFICATIONS (Read-only for the user)
+# 5. NOTIFICATIONS (User-specific, division-based)
 # GET /api/notifications/
 # ============================================================
 @csrf_exempt
@@ -178,19 +178,23 @@ def notifications(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
-    # Show fire alert notifications to public users
-    fire_notifs = FireAlert.objects.select_related('station').filter(status='ACTIVE')
+    from officer_module.models import UserNotification
+    notifs = UserNotification.objects.filter(recipient=user).order_by('-created_at')[:50]
 
     data = []
-    for alert in fire_notifs:
+    for n in notifs:
         data.append({
-            'id': f'fire_{alert.id}',
-            'title': f'🔥 Fire Alert: {alert.station.name if alert.station else "Unknown Location"}',
-            'body': f'Severity: {alert.severity} | Status: {alert.status}',
+            'id': n.id,
+            'title': n.title,
+            'body': n.body,
             'type': 'fire',
-            'is_read': False,
-            'created_at': alert.detected_at.strftime('%d %b %Y, %I:%M %p') if alert.detected_at else '',
+            'notif_type': n.notif_type,
+            'is_read': n.is_read,
+            'created_at': n.created_at.strftime('%d %b %Y, %I:%M %p'),
         })
+
+    # Mark all as read after fetching
+    notifs.filter(is_read=False).update(is_read=True)
 
     return JsonResponse(data, safe=False, status=200)
 

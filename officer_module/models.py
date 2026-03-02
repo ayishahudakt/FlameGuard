@@ -77,6 +77,42 @@ class HumanIntrusionAlert(models.Model):
 
 
 # ================================
+# USER NOTIFICATION SYSTEM
+# ================================
+class UserNotification(models.Model):
+    """
+    Notifications sent to public users when a fire alert occurs.
+    Scoped to a specific division — only users in that division receive them.
+    """
+    NOTIF_TYPE_CHOICES = (
+        ('FIRE_ALERT', 'Fire Alert'),
+        ('STATUS_UPDATE', 'Status Update'),
+    )
+
+    fire_alert = models.ForeignKey(
+        'admin_module.FireAlert',
+        on_delete=models.CASCADE,
+        related_name='user_notifications'
+    )
+    recipient = models.ForeignKey(
+        'admin_module.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='user_notifications'
+    )
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+    notif_type = models.CharField(max_length=15, choices=NOTIF_TYPE_CHOICES, default='FIRE_ALERT')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} → {self.recipient.username}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ================================
 # ANIMAL DETECTION ALERTS
 # ================================
 class AnimalAlert(models.Model):

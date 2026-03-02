@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // ============================================================
   // IMPORTANT: Change this to your Django server IP address!
-  // When running on a physical phone, use your PC's local IP
+  // When running on a physical phone, use your PC's local IPiiiiiiiiiiiii                    
   // e.g. http://192.168.1.5:8000
   // Find your IP by running "ipconfig" in PowerShell
   // ============================================================
-  static const String BASE_URL = 'http://192.168.37.156:8000';
+  static const String BASE_URL = 'http://172.20.10.2:8000';
 
 
   // Get the stored authentication token
@@ -51,6 +51,9 @@ class ApiService {
         };
       }
     } catch (e) {
+      print('====== LOGIN ERROR ======');
+      print(e);
+      print('=========================');
       return {
         'success': false,
         'message': 'Cannot connect to server. Check your internet connection.'
@@ -86,10 +89,12 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final List<dynamic> raw = jsonDecode(response.body);
-        return raw.cast<Map<String, dynamic>>();
+        return List<Map<String, dynamic>>.from(raw);
       }
+      print('====== DIVISIONS API ERROR ======: Status Code ${response.statusCode}, Body: ${response.body}');
       return [];
     } catch (e) {
+      print('====== DIVISIONS EXCEPTION ======: $e');
       return [];
     }
   }

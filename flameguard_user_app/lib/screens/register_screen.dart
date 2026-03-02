@@ -111,6 +111,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildDivisionDropdown() {
+    if (!_divisionsLoading && _divisions.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red.shade300),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.red.shade50,
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('Failed to load divisions. Check connection.',
+                      style: TextStyle(color: Colors.red)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _divisionsLoading = true;
+                    });
+                    _loadDivisions();
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return DropdownButtonFormField<int>(
       value: _selectedDivisionId,
       decoration: InputDecoration(
@@ -224,9 +259,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _usernameController,
                             label: 'Username',
                             icon: Icons.person_outline,
-                            validator: (v) => v == null || v.isEmpty
-                                ? 'Username is required'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Username is required';
+                              if (v.length > 15) return 'Username cannot exceed 15 characters';
+                              if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(v)) return 'Username can only contain letters and numbers';
+                              int numberCount = RegExp(r'[0-9]').allMatches(v).length;
+                              if (numberCount > 4) return 'Username cannot have more than 4 numbers';
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 14),
                           _buildTextField(
@@ -236,7 +276,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Email is required';
-                              if (!v.contains('@')) return 'Enter a valid email';
+                              // This regex checks for a standard email format ending in .com
+                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$').hasMatch(v)) {
+                                return 'Enter a valid email ending with .com';
+                              }
                               return null;
                             },
                           ),
@@ -246,9 +289,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'Phone Number',
                             icon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
-                            validator: (v) => v == null || v.isEmpty
-                                ? 'Phone number is required'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Phone number is required';
+                              // This regex checks if the phone number is exactly 10 digits
+                              if (!RegExp(r'^\d{10}$').hasMatch(v)) return 'Phone number must be exactly 10 digits';
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 14),
                           // ── Division Dropdown ──
@@ -268,7 +314,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Password is required';
-                              if (v.length < 6) return 'Password must be at least 6 characters';
+                              if (v.length < 8) return 'Password must be at least 8 characters';
+                              if (!RegExp(r'[A-Z]').hasMatch(v)) return 'Must contain at least one uppercase letter';
+                              if (!RegExp(r'[a-z]').hasMatch(v)) return 'Must contain at least one lowercase letter';
+                              if (!RegExp(r'[0-9]').hasMatch(v)) return 'Must contain at least one number';
+                              if (!RegExp(r'[!@#\$&*~%]').hasMatch(v)) return 'Must contain at least one special character';
                               return null;
                             },
                           ),

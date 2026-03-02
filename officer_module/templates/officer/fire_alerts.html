@@ -258,6 +258,39 @@
         box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
+    /* Send Alert Button */
+    .modern-send-btn {
+        background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+        color: #ea580c;
+        border: 2px solid #ea580c;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        background-color: transparent;
+    }
+
+    .modern-send-btn:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+    }
+
+    .modern-send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
     /* Empty State */
     .empty-state {
         text-align: center;
@@ -300,6 +333,18 @@
 {% endblock %}
 
 {% block content %}
+<!-- Toast Notification Container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    <div id="alertToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive"
+        aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body fs-6" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <div class="page-container">
     <!-- Fire Alerts Header -->
     <h1 class="page-header">
@@ -353,10 +398,18 @@
                     </div>
 
                     {% if alert.status != 'RESOLVED' %}
-                    <a href="{% url 'update_fire_alert_status' alert.pk %}" class="modern-update-btn">
-                        <i class="bi bi-pencil-fill"></i>
-                        Update Status
-                    </a>
+                    <div class="d-flex flex-wrap align-items-center" style="gap:0">
+                        <a href="{% url 'update_fire_alert_status' alert.pk %}" class="modern-update-btn">
+                            <i class="bi bi-pencil-fill"></i>
+                            Update Status
+                        </a>
+                        <button class="modern-send-btn"
+                            onclick="sendAlert(this, {{ alert.pk }}, '{{ alert.station.division.name|escapejs }}')"
+                            title="Send alert to users in {{ alert.station.division.name }}">
+                            <i class="bi bi-send-fill"></i>
+                            Send Alert
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -372,4 +425,83 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function sendAlert(btn, alertId, divisionName) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+
+        // Read CSRF token from the cookie (works even when template caching is aggressive)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
+
+        fetch(`/officer-panel/fire-alerts/send-alert/${alertId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+            .then(res => {
+                // If Django returns a redirect (login page HTML), res.json() would throw.
+                // Check status first.
+                if (res.status === 401) {
+                    throw new Error('Session expired. Please refresh and log in again.');
+                }
+                if (res.status === 403) {
+                    throw new Error('Access denied. Officer login required.');
+                }
+                if (!res.ok) {
+                    throw new Error(`Server error (HTTP ${res.status}). Please try again.`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                btn.disabled = false;
+                if (data.success) {
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Sent!';
+                    showToast(`\u2705 ${data.message}`, '#198754');
+                } else {
+                    btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Alert';
+                    showToast(`\u274c ${data.error || 'Something went wrong.'}`, '#dc3545');
+                }
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Alert';
+                    btn.disabled = false;
+                }, 3500);
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Alert';
+                showToast(`\u274c ${err.message || 'Connection error. Please try again.'}`, '#dc3545');
+            });
+    }
+
+    function showToast(msg, bgColor) {
+        const toastEl = document.getElementById('alertToast');
+        const toastMsg = document.getElementById('toastMessage');
+        toastEl.style.backgroundColor = bgColor;
+        toastMsg.style.color = '#fff';
+        toastMsg.textContent = msg;
+        const toast = new bootstrap.Toast(toastEl, { delay: 6000 });
+        toast.show();
+    }
+</script>
 {% endblock %}
