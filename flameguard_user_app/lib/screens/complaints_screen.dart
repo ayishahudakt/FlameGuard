@@ -70,8 +70,8 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Complaints', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.indigo,
+        title: const Text('Complaints', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFE65100),
         iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
@@ -108,8 +108,12 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
               controller: _subjectController,
               decoration: InputDecoration(
                 labelText: 'Subject',
-                prefixIcon: const Icon(Icons.subject),
+                prefixIcon: const Icon(Icons.subject, color: Color(0xFFE65100)),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+                ),
               ),
               validator: (v) => v == null || v.isEmpty ? 'Subject is required' : null,
             ),
@@ -120,8 +124,12 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
               decoration: InputDecoration(
                 labelText: 'Message',
                 alignLabelWithHint: true,
-                prefixIcon: const Icon(Icons.message_outlined),
+                prefixIcon: const Icon(Icons.message_outlined, color: Color(0xFFE65100)),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE65100), width: 2),
+                ),
               ),
               validator: (v) => v == null || v.isEmpty ? 'Message is required' : null,
             ),
@@ -132,9 +140,10 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
               child: ElevatedButton.icon(
                 onPressed: _isSending ? null : _sendComplaint,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
+                  backgroundColor: const Color(0xFFE65100),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
                 ),
                 icon: _isSending
                     ? const SizedBox(
@@ -153,7 +162,7 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
 
   Widget _buildComplaintsList() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.indigo));
+      return const Center(child: CircularProgressIndicator(color: Color(0xFFE65100)));
     }
     if (_complaints.isEmpty) {
       return const Center(
@@ -187,7 +196,7 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.report_problem_outlined, color: Colors.indigo, size: 20),
+                      const Icon(Icons.report_problem_outlined, color: Color(0xFFE65100), size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(c['subject'] ?? '—',

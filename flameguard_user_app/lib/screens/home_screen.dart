@@ -130,21 +130,52 @@ class _HomeScreenState extends State<HomeScreen> {
       slivers: [
         SliverToBoxAdapter(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFBF360C), Color(0xFFE65100)],
+                colors: [Color(0xFFE65100), Color(0xFFFF9800)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x40E65100),
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Welcome back,',
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _username,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
                     GestureDetector(
                       onTap: () async {
                         await Navigator.push(
@@ -153,44 +184,71 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                         _fetchProfile(); // Refresh when coming back
                       },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white24,
-                        radius: 25,
-                        backgroundImage: _profilePicture != null 
-                            ? NetworkImage(_profilePicture!) 
-                            : null,
-                        child: _profilePicture == null 
-                            ? const Icon(Icons.person, color: Colors.white, size: 28)
-                            : null,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.orange.shade100,
+                          radius: 28,
+                          backgroundImage: _profilePicture != null 
+                              ? NetworkImage(_profilePicture!) 
+                              : null,
+                          child: _profilePicture == null 
+                              ? const Icon(Icons.person, color: Colors.orange, size: 30)
+                              : null,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Welcome back,',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 13)),
-                        Text(_username,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
-                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  '🔥 FLAME Guard',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold),
-                ),
-                const Text(
-                  'Intelligent Forest Monitoring System',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                const SizedBox(height: 28),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.shield_outlined, color: Colors.white, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'FLAME Guard',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Active Protection System',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
