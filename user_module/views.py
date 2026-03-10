@@ -123,10 +123,23 @@ def fire_alerts(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
+    # Only show fire alerts that the officer has explicitly "Sent Alert" for.
+    # We know an alert is sent if there's a UserNotification of type 'FIRE_ALERT'
+    from officer_module.models import UserNotification
+
     if hasattr(user, 'division') and user.division:
-        alerts = FireAlert.objects.select_related('station', 'station__division').filter(station__division=user.division)
+        # Get IDs of all fire alerts this user was notified about
+        notified_alert_ids = UserNotification.objects.filter(
+            recipient=user, 
+            notif_type='FIRE_ALERT'
+        ).values_list('fire_alert_id', flat=True)
+        
+        alerts = FireAlert.objects.select_related('station', 'station__division').filter(
+            id__in=notified_alert_ids,
+            station__division=user.division
+        )
     else:
-        alerts = FireAlert.objects.select_related('station', 'station__division').all()
+        alerts = FireAlert.objects.none()
 
     data = []
     for alert in alerts:
