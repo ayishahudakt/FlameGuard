@@ -535,3 +535,56 @@ def update_animal_alert_status(request, pk):
         return redirect('view_animal_alerts')
 
     return render(request, 'officer/update_animal_alert.html', {'alert': alert})
+
+
+# ================================
+# 12. VIEW USER (MOBILE) COMPLAINTS
+# ================================
+@officer_required
+def view_user_complaints(request):
+    """View complaints submitted by mobile app users in the officer's division"""
+    complaints = []
+    error_message = None
+
+    try:
+        officer_profile = request.user.officer_profile
+        station = officer_profile.station
+        if station and station.division:
+            # Show complaints from users in same division
+            complaints = Complaint.objects.filter(
+                sender__user_type='USER',
+                sender__division=station.division
+            ).order_by('-created_at')
+        else:
+            error_message = "No station/division assigned to your profile."
+    except Exception:
+        # Officer may not have a profile — show nothing
+        complaints = Complaint.objects.filter(sender__user_type='USER').order_by('-created_at')
+
+    return render(request, 'officer/user_complaints.html', {
+        'complaints': complaints,
+        'error_message': error_message,
+    })
+
+
+@officer_required
+def reply_user_complaint(request, pk):
+    """Reply to a mobile user complaint"""
+    complaint = get_object_or_404(Complaint, pk=pk, sender__user_type='USER')
+
+    if request.method == 'POST':
+        reply_text = request.POST.get('reply', '').strip()
+        new_status = request.POST.get('status', 'IN_PROGRESS')
+
+        if reply_text:
+            from django.utils import timezone
+            complaint.reply = reply_text
+            complaint.status = new_status
+            complaint.replied_at = timezone.now()
+            complaint.save()
+            messages.success(request, 'Reply sent successfully!')
+        else:
+            messages.error(request, 'Reply cannot be empty.')
+        return redirect('view_user_complaints')
+
+    return render(request, 'officer/reply_user_complaint.html', {'complaint': complaint})

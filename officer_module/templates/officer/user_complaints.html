@@ -1,0 +1,66 @@
+{% extends 'officer/base.html' %}
+{% block title %}User Complaints{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color:#1e40af;">
+        <i class="bi bi-chat-dots-fill me-2 text-primary"></i> User Complaints
+    </h2>
+    <span class="badge bg-primary fs-6">{{ complaints|length }} complaint{{ complaints|length|pluralize }}</span>
+</div>
+
+{% if error_message %}
+<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}</div>
+{% endif %}
+
+{% if complaints %}
+{% for complaint in complaints %}
+<div class="card mb-3 shadow-sm border-0" style="border-radius:16px; overflow:hidden;">
+    <div class="card-header d-flex justify-content-between align-items-center py-3 px-4"
+        style="background: linear-gradient(135deg, #1e40af, #7c3aed); color:white;">
+        <div>
+            <i class="bi bi-person-circle me-2"></i>
+            <strong>{{ complaint.sender.username }}</strong>
+            <span class="ms-2 opacity-75 small">{{ complaint.sender.division.name|default:"N/A" }} Division</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if complaint.status == 'PENDING' %}
+            <span class="badge bg-warning text-dark">Pending</span>
+            {% elif complaint.status == 'IN_PROGRESS' %}
+            <span class="badge bg-info">In Progress</span>
+            {% elif complaint.status == 'RESOLVED' %}
+            <span class="badge bg-success">Resolved</span>
+            {% endif %}
+            <small class="opacity-75">{{ complaint.created_at|date:"d M Y, h:i A" }}</small>
+        </div>
+    </div>
+    <div class="card-body px-4 pt-3 pb-2">
+        <h5 class="fw-bold mb-1">{{ complaint.subject }}</h5>
+        <p class="text-muted mb-3">{{ complaint.message }}</p>
+
+        {% if complaint.reply %}
+        <div class="p-3 rounded mb-3" style="background:#f0f9ff; border-left: 4px solid #1e40af;">
+            <small class="text-primary fw-bold"><i class="bi bi-reply-fill me-1"></i> Your Reply</small>
+            <p class="mb-1 mt-1">{{ complaint.reply }}</p>
+            {% if complaint.replied_at %}
+            <small class="text-muted"><i class="bi bi-clock me-1"></i>Replied on: {{ complaint.replied_at|date:"d M Y,
+                h:i A" }}</small>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-footer px-4 py-2 bg-white border-0">
+        <a href="{% url 'reply_user_complaint' complaint.pk %}" class="btn btn-sm btn-primary rounded-pill px-3">
+            <i class="bi bi-reply me-1"></i>
+            {% if complaint.reply %}Update Reply{% else %}Reply{% endif %}
+        </a>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-chat-square-dots" style="font-size:5rem; color:#d1d5db;"></i>
+    <p class="text-muted mt-3 fs-5">No user complaints from your division yet.</p>
+</div>
+{% endif %}
+{% endblock %}

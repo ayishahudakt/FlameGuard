@@ -176,7 +176,7 @@ class ApiService {
 
   // ---- SEND COMPLAINT ----
   static Future<Map<String, dynamic>> sendComplaint(
-      String subject, String message, String division) async {
+      String subject, String message) async {
     try {
       final headers = await getHeaders();
       final response = await http.post(
@@ -185,7 +185,6 @@ class ApiService {
         body: jsonEncode({
           'subject': subject,
           'message': message,
-          'division': division,
         }),
       );
       if (response.statusCode == 201) {

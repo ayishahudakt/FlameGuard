@@ -18,12 +18,7 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
   final _formKey = GlobalKey<FormState>();
   final _subjectController = TextEditingController();
   final _messageController = TextEditingController();
-  String _selectedDivision = 'Division 1';
   bool _isSending = false;
-
-  final List<String> _divisions = [
-    'Division 1', 'Division 2', 'Division 3', 'Division 4', 'Division 5'
-  ];
 
   @override
   void initState() {
@@ -52,7 +47,6 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
     final result = await ApiService.sendComplaint(
       _subjectController.text.trim(),
       _messageController.text.trim(),
-      _selectedDivision,
     );
     setState(() => _isSending = false);
     if (!mounted) return;
@@ -110,18 +104,6 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
             const Text('Your complaint will be sent to the relevant officer.',
                 style: TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 20),
-            // Division dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedDivision,
-              decoration: InputDecoration(
-                labelText: 'Select Division',
-                prefixIcon: const Icon(Icons.account_tree_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              items: _divisions.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-              onChanged: (v) => setState(() => _selectedDivision = v!),
-            ),
-            const SizedBox(height: 16),
             TextFormField(
               controller: _subjectController,
               decoration: InputDecoration(

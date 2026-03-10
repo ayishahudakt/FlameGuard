@@ -35,4 +35,8 @@ urlpatterns = [
     
     # Notifications
     path('notifications/', views.view_notifications, name='view_officer_notifications'),
+
+    # User (Mobile) Complaints
+    path('user-complaints/', views.view_user_complaints, name='view_user_complaints'),
+    path('user-complaints/<int:pk>/reply/', views.reply_user_complaint, name='reply_user_complaint'),
 ]
