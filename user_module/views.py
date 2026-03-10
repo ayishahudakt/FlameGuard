@@ -169,20 +169,20 @@ def animal_alerts(request):
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
     if hasattr(user, 'division') and user.division:
-        alerts = AnimalAlert.objects.select_related('officer').filter(officer__forest_station__division=user.division)
+        alerts = AnimalAlert.objects.select_related('station', 'station__division').filter(station__division=user.division)
     else:
-        alerts = AnimalAlert.objects.select_related('officer').all()
+        alerts = AnimalAlert.objects.select_related('station', 'station__division').all()
 
     data = []
     for alert in alerts:
         data.append({
             'id': alert.id,
             'animal_type': alert.animal_type if hasattr(alert, 'animal_type') else 'Unknown',
-            'location': alert.location if hasattr(alert, 'location') else '',
+            'location': alert.location_details if hasattr(alert, 'location_details') else '',
             'status': alert.status if hasattr(alert, 'status') else 'ACTIVE',
             'detected_at': alert.detected_at.strftime('%d %b %Y, %I:%M %p') if hasattr(alert, 'detected_at') and alert.detected_at else '',
-            'confidence': alert.confidence if hasattr(alert, 'confidence') else None,
-            'division': alert.officer.forest_station.division.name if hasattr(alert, 'officer') and alert.officer and hasattr(alert.officer, 'forest_station') and alert.officer.forest_station else '',
+            'confidence': alert.confidence_score if hasattr(alert, 'confidence_score') else None,
+            'division': alert.station.division.name if alert.station and alert.station.division else '',
             'image': request.build_absolute_uri(alert.image.url) if hasattr(alert, 'image') and alert.image else None,
         })
 

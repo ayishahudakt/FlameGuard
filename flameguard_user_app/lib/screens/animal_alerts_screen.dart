@@ -111,10 +111,6 @@ class _AnimalAlertsScreenState extends State<AnimalAlertsScreen> {
               _infoRow(Icons.access_time, 'Date & Time', alert['detected_at'] ?? alert['created_at'] ?? '—'),
               const SizedBox(height: 4),
               _infoRow(Icons.account_tree_outlined, 'Division', alert['division'] ?? alert['station'] ?? '—'),
-              if (alert['confidence'] != null) ...[
-                const SizedBox(height: 4),
-                _infoRow(Icons.analytics_outlined, 'Confidence', '${alert['confidence']}%'),
-              ],
             ],
           ),
         ),
