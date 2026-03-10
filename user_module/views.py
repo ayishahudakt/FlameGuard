@@ -123,7 +123,10 @@ def fire_alerts(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
-    alerts = FireAlert.objects.select_related('station', 'station__division').all()
+    if hasattr(user, 'division') and user.division:
+        alerts = FireAlert.objects.select_related('station', 'station__division').filter(station__division=user.division)
+    else:
+        alerts = FireAlert.objects.select_related('station', 'station__division').all()
 
     data = []
     for alert in alerts:
@@ -152,7 +155,10 @@ def animal_alerts(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
-    alerts = AnimalAlert.objects.select_related('officer').all()
+    if hasattr(user, 'division') and user.division:
+        alerts = AnimalAlert.objects.select_related('officer').filter(officer__forest_station__division=user.division)
+    else:
+        alerts = AnimalAlert.objects.select_related('officer').all()
 
     data = []
     for alert in alerts:
