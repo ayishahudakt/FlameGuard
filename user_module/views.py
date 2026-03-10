@@ -190,8 +190,9 @@ def animal_alerts(request):
 
 
 # ============================================================
-# 5. NOTIFICATIONS (User-specific, division-based)
+# 5. NOTIFICATIONS (User-specific)
 # GET /api/notifications/
+# Only shows manual alerts pushed by officers via Send User Alert page.
 # ============================================================
 @csrf_exempt
 @require_http_methods(["GET"])
@@ -200,23 +201,28 @@ def notifications(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
-    from officer_module.models import UserNotification
-    notifs = UserNotification.objects.filter(recipient=user).order_by('-created_at')[:50]
+    from officer_module.models import UserAlert
 
     data = []
-    for n in notifs:
-        data.append({
-            'id': n.id,
-            'title': n.title,
-            'body': n.body,
-            'type': 'fire',
-            'notif_type': n.notif_type,
-            'is_read': n.is_read,
-            'created_at': n.created_at.strftime('%d %b %Y, %I:%M %p'),
-        })
 
-    # Mark all as read after fetching
-    notifs.filter(is_read=False).update(is_read=True)
+    # Only show manual alerts sent by officers in the same division
+    if hasattr(user, 'division') and user.division:
+        user_alerts = UserAlert.objects.filter(
+            officer__officer_profile__station__division=user.division,
+            is_active=True
+        ).order_by('-created_at')[:50]
+
+        for ua in user_alerts:
+            body = f"{ua.message}\nLocation: {ua.location}" if ua.location else ua.message
+            data.append({
+                'id': f"alert_{ua.id}",
+                'title': ua.title,
+                'body': body,
+                'type': 'alert',
+                'notif_type': ua.alert_type,
+                'is_read': True,
+                'created_at': ua.created_at.strftime('%d %b %Y, %I:%M %p'),
+            })
 
     return JsonResponse(data, safe=False, status=200)
 
