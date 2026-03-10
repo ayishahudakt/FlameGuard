@@ -94,6 +94,9 @@ def user_register(request):
         if CustomUser.objects.filter(email=email).exists():
             return JsonResponse({'error': 'Email already registered. Please login.'}, status=400)
 
+        if phone and CustomUser.objects.filter(phone_number=phone).exists():
+            return JsonResponse({'error': 'This phone number is already registered.'}, status=400)
+
         user = CustomUser.objects.create_user(
             username=username,
             email=email,
@@ -318,3 +321,56 @@ def divisions(request):
         for d in all_divisions
     ]
     return JsonResponse(data, safe=False, status=200)
+
+
+# ============================================================
+# 10. USER PROFILE
+# GET, POST /api/user/profile/
+# ============================================================
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def user_profile(request):
+    user = get_user_from_token(request)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+
+    if request.method == "GET":
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'phone': user.phone_number or '',
+            'division': user.division.name if hasattr(user, 'division') and user.division else 'N/A',
+            'user_type': user.user_type,
+            'date_joined': user.date_joined.strftime('%d %b %Y') if user.date_joined else '',
+            'profile_picture': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
+        }
+        return JsonResponse(data, status=200)
+    
+    elif request.method == "POST":
+        try:
+            # Check if this is a multipart request (Django handles POST and FILES natively)
+            if request.content_type.startswith('multipart/form-data'):
+                phone = request.POST.get('phone', '').strip()
+                profile_pic = request.FILES.get('profile_picture')
+            else:
+                # Fallback to JSON payload if available
+                data = json.loads(request.body)
+                phone = data.get('phone', '').strip()
+                profile_pic = None
+
+            if phone:
+                if CustomUser.objects.filter(phone_number=phone).exclude(id=user.id).exists():
+                    return JsonResponse({'error': 'This phone number is already registered.'}, status=400)
+                user.phone_number = phone
+                
+            if profile_pic:
+                user.profile_picture = profile_pic
+                
+            user.save()
+            return JsonResponse({
+                'message': 'Profile updated successfully!', 
+                'phone': user.phone_number,
+                'profile_picture': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None
+            }, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

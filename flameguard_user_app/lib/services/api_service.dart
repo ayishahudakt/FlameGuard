@@ -230,4 +230,67 @@ class ApiService {
       return [];
     }
   }
+
+  // ---- USER PROFILE ----
+  static Future<Map<String, dynamic>?> getProfile() async {
+    try {
+      final headers = await getHeaders();
+      final response = await http.get(
+        Uri.parse('$BASE_URL/api/user/profile/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateProfile(String phone) async {
+    try {
+      final headers = await getHeaders();
+      final response = await http.post(
+        Uri.parse('$BASE_URL/api/user/profile/'),
+        headers: headers,
+        body: jsonEncode({'phone': phone}),
+      );
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': jsonDecode(response.body)};
+      }
+      final err = jsonDecode(response.body);
+      return {'success': false, 'message': err['error'] ?? 'Failed to update profile'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateProfilePicture(String filepath) async {
+    try {
+      final token = await getToken();
+      var request = http.MultipartRequest(
+          'POST', Uri.parse('$BASE_URL/api/user/profile/'));
+      
+      if (token != null) {
+        request.headers['Authorization'] = 'Token $token';
+      }
+
+      request.files.add(await http.MultipartFile.fromPath(
+        'profile_picture',
+        filepath,
+      ));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': jsonDecode(response.body)};
+      }
+      final err = jsonDecode(response.body);
+      return {'success': false, 'message': err['error'] ?? 'Failed to update profile picture'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error'};
+    }
+  }
 }

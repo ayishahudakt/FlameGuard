@@ -7,6 +7,7 @@ import 'complaints_screen.dart';
 import 'notifications_screen.dart';
 import 'animals_screen.dart';
 import 'contacts_screen.dart';
+import 'profile_screen.dart';
 import '../services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,11 +20,22 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String _username = 'User';
+  String? _profilePicture;
 
   @override
   void initState() {
     super.initState();
     _loadUsername();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    final data = await ApiService.getProfile();
+    if (data != null && mounted) {
+      setState(() {
+        _profilePicture = data['profile_picture'];
+      });
+    }
   }
 
   Future<void> _loadUsername() async {
@@ -133,10 +145,24 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
-                      backgroundColor: Colors.white24,
-                      radius: 25,
-                      child: Icon(Icons.person, color: Colors.white, size: 28),
+                    GestureDetector(
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                        );
+                        _fetchProfile(); // Refresh when coming back
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white24,
+                        radius: 25,
+                        backgroundImage: _profilePicture != null 
+                            ? NetworkImage(_profilePicture!) 
+                            : null,
+                        child: _profilePicture == null 
+                            ? const Icon(Icons.person, color: Colors.white, size: 28)
+                            : null,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
