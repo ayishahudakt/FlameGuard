@@ -1,0 +1,83 @@
+{% extends 'officer/base.html' %}
+{% block title %}Animals - Officer Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color:#1e40af;">
+        <i class="bi bi-tree-fill me-2 text-success"></i> Animal Registry
+    </h2>
+    <a href="{% url 'officer_add_animal' %}" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-plus-lg me-1"></i> Add Animal
+    </a>
+</div>
+
+<div class="row g-4">
+    {% if animals %}
+    {% for animal in animals %}
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius:16px; overflow:hidden;">
+            <div class="position-relative" style="height:200px; background:#f8f9fa;">
+                {% if animal.image %}
+                <img src="{{ animal.image.url }}" class="w-100 h-100" style="object-fit:cover;" alt="{{ animal.name }}">
+                {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size:3rem;"></i>
+                </div>
+                {% endif %}
+                <div class="position-absolute top-0 end-0 m-2">
+                    {% if animal.is_dangerous %}
+                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Dangerous
+                    </span>
+                    {% else %}
+                    <span class="badge bg-success rounded-pill px-3 py-2">
+                        <i class="bi bi-check-circle me-1"></i> Safe
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-1">{{ animal.name }}</h5>
+                <p class="text-primary fst-italic small mb-2">{{ animal.scientific_name|default:"—" }}</p>
+                <p class="text-muted small mb-0"
+                    style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+                    {{ animal.description }}
+                </p>
+            </div>
+            <div class="card-footer bg-white border-0 pb-4 px-4 d-flex gap-2">
+                <a href="{% url 'officer_edit_animal' animal.pk %}"
+                    class="btn btn-outline-primary flex-grow-1 btn-sm fw-bold">Edit</a>
+                <button type="button" class="btn btn-outline-danger flex-grow-1 btn-sm fw-bold" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal{{ animal.pk }}">Delete</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-tree text-muted" style="font-size:5rem;"></i>
+        <p class="text-muted mt-3 fs-5">No animals registered yet.</p>
+        <a href="{% url 'officer_add_animal' %}" class="btn btn-primary rounded-pill px-4 mt-2">Add First Animal</a>
+    </div>
+    {% endif %}
+</div>
+
+{% for animal in animals %}
+<div class="modal fade" id="deleteModal{{ animal.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div class="modal-body text-center p-5">
+                <i class="bi bi-exclamation-triangle text-danger mb-3" style="font-size:3rem;"></i>
+                <h4 class="fw-bold mb-2">Delete {{ animal.name }}?</h4>
+                <p class="text-muted mb-4">Are you sure you want to remove <strong>{{ animal.name }}</strong> from the
+                    registry?</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-light px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'officer_delete_animal' animal.pk %}" class="btn btn-danger px-4 fw-bold">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

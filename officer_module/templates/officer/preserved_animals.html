@@ -1,0 +1,92 @@
+{% extends 'officer/base.html' %}
+{% block title %}Preserved Animals - Officer Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color:#1e40af;">
+        <i class="bi bi-award-fill me-2 text-warning"></i> Preserved Animals
+    </h2>
+    <a href="{% url 'officer_add_preserved_animal' %}" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-plus-lg me-1"></i> Add to List
+    </a>
+</div>
+
+<div class="row g-4">
+    {% if preserved_animals %}
+    {% for preserved in preserved_animals %}
+    <div class="col-xl-4 col-md-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius:16px; overflow:hidden;">
+            <div class="card-header border-0 py-3 px-4"
+                style="background:linear-gradient(135deg,#1e40af,#7c3aed); color:white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">{{ preserved.animal.name }}</h5>
+                    <span class="badge bg-white text-primary rounded-pill px-3">{{ preserved.get_preservation_status_display }}</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Threat Level</p>
+                        {% if preserved.threat_level == 'LOW' %}
+                        <span class="badge bg-success rounded-pill px-3 py-2 w-100">{{ preserved.get_threat_level_display }}</span>
+                        {% elif preserved.threat_level == 'MEDIUM' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2 w-100">{{ preserved.get_threat_level_display }}</span>
+                        {% elif preserved.threat_level == 'HIGH' %}
+                        <span class="badge rounded-pill px-3 py-2 w-100" style="background:#ea580c; color:white;">{{ preserved.get_threat_level_display }}</span>
+                        {% else %}
+                        <span class="badge bg-danger rounded-pill px-3 py-2 w-100">{{ preserved.get_threat_level_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Population</p>
+                        <div class="fw-bold text-dark">{{ preserved.population_estimate|default:"N/A" }}</div>
+                    </div>
+                </div>
+                {% if preserved.conservation_notes %}
+                <div class="p-3 bg-light rounded-3 mb-2">
+                    <small class="text-muted">{{ preserved.conservation_notes }}</small>
+                </div>
+                {% endif %}
+                <div class="mt-2">
+                    <small class="text-muted"><i class="bi bi-calendar me-1"></i> Last Updated: {{ preserved.last_updated|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 pb-4 px-4 d-flex gap-2">
+                <a href="{% url 'officer_edit_preserved_animal' preserved.pk %}"
+                    class="btn btn-outline-primary flex-grow-1 btn-sm fw-bold">Edit</a>
+                <button type="button" class="btn btn-outline-danger flex-grow-1 btn-sm fw-bold" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal{{ preserved.pk }}">Remove</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-award text-muted" style="font-size:5rem;"></i>
+        <p class="text-muted mt-3 fs-5">No preserved animals tracked yet.</p>
+        <a href="{% url 'officer_add_preserved_animal' %}" class="btn btn-primary rounded-pill px-4 mt-2">Add First
+            Entry</a>
+    </div>
+    {% endif %}
+</div>
+
+{% for preserved in preserved_animals %}
+<div class="modal fade" id="deleteModal{{ preserved.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+            <div class="modal-body text-center p-5">
+                <i class="bi bi-exclamation-triangle text-danger mb-3" style="font-size:3rem;"></i>
+                <h4 class="fw-bold mb-2">Remove from List?</h4>
+                <p class="text-muted mb-4">Are you sure you want to remove <strong>{{ preserved.animal.name }}</strong>
+                    from the preserved list?</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-light px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'officer_delete_preserved_animal' preserved.pk %}"
+                        class="btn btn-danger px-4 fw-bold">Remove</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

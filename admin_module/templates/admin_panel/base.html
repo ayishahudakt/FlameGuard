@@ -57,18 +57,7 @@
                         <span>Forest Stations</span>
                     </a>
                 </li>
-                <li class="{% if request.resolver_match.url_name == 'manage_animals' %}active{% endif %}">
-                    <a href="{% url 'manage_animals' %}">
-                        <i data-feather="gitlab"></i>
-                        <span>Animals</span>
-                    </a>
-                </li>
-                <li class="{% if request.resolver_match.url_name == 'manage_preserved_animals' %}active{% endif %}">
-                    <a href="{% url 'manage_preserved_animals' %}">
-                        <i data-feather="award"></i>
-                        <span>Preserved Animals</span>
-                    </a>
-                </li>
+
                 <li class="{% if request.resolver_match.url_name == 'manage_officers' %}active{% endif %}">
                     <a href="{% url 'manage_officers' %}">
                         <i data-feather="users"></i>

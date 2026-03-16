@@ -39,4 +39,16 @@ urlpatterns = [
     # User (Mobile) Complaints
     path('user-complaints/', views.view_user_complaints, name='view_user_complaints'),
     path('user-complaints/<int:pk>/reply/', views.reply_user_complaint, name='reply_user_complaint'),
+
+    # Animal Management (Officer)
+    path('animals/', views.officer_manage_animals, name='officer_manage_animals'),
+    path('animals/add/', views.officer_add_animal, name='officer_add_animal'),
+    path('animals/edit/<int:pk>/', views.officer_edit_animal, name='officer_edit_animal'),
+    path('animals/delete/<int:pk>/', views.officer_delete_animal, name='officer_delete_animal'),
+
+    # Preserved Animal Management (Officer)
+    path('preserved-animals/', views.officer_manage_preserved_animals, name='officer_manage_preserved_animals'),
+    path('preserved-animals/add/', views.officer_add_preserved_animal, name='officer_add_preserved_animal'),
+    path('preserved-animals/edit/<int:pk>/', views.officer_edit_preserved_animal, name='officer_edit_preserved_animal'),
+    path('preserved-animals/delete/<int:pk>/', views.officer_delete_preserved_animal, name='officer_delete_preserved_animal'),
 ]

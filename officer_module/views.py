@@ -9,7 +9,8 @@ import json
 from django.utils import timezone
 from django.db.models import Q
 from admin_module.models import (CustomUser, ForestStation, Complaint,
-                                 Notification, Report, FireAlert)
+                                 Notification, Report, FireAlert,
+                                 Animal, PreservedAnimal)
 from .models import ForestOfficer, UserAlert, HumanIntrusionAlert, UserNotification
 
 # ================================
@@ -588,3 +589,128 @@ def reply_user_complaint(request, pk):
         return redirect('view_user_complaints')
 
     return render(request, 'officer/reply_user_complaint.html', {'complaint': complaint})
+
+
+# ================================
+# 13. ANIMAL MANAGEMENT (Officer)
+# ================================
+@officer_required
+def officer_manage_animals(request):
+    """View all animals in the registry"""
+    animals = Animal.objects.all()
+    return render(request, 'officer/animals.html', {'animals': animals})
+
+
+@officer_required
+def officer_add_animal(request):
+    """Add new animal"""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        scientific_name = request.POST.get('scientific_name', '').strip()
+        description = request.POST.get('description', '').strip()
+        is_dangerous = request.POST.get('is_dangerous') == 'on'
+        image = request.FILES.get('image')
+
+        animal = Animal.objects.create(
+            name=name,
+            scientific_name=scientific_name,
+            description=description,
+            is_dangerous=is_dangerous,
+        )
+        if image:
+            animal.image = image
+            animal.save()
+        messages.success(request, 'Animal added successfully!')
+        return redirect('officer_manage_animals')
+
+    return render(request, 'officer/add_animal.html')
+
+
+@officer_required
+def officer_edit_animal(request, pk):
+    """Edit an existing animal"""
+    animal = get_object_or_404(Animal, pk=pk)
+
+    if request.method == 'POST':
+        animal.name = request.POST.get('name', '').strip()
+        animal.scientific_name = request.POST.get('scientific_name', '').strip()
+        animal.description = request.POST.get('description', '').strip()
+        animal.is_dangerous = request.POST.get('is_dangerous') == 'on'
+        if request.FILES.get('image'):
+            animal.image = request.FILES['image']
+        animal.save()
+        messages.success(request, 'Animal updated successfully!')
+        return redirect('officer_manage_animals')
+
+    return render(request, 'officer/edit_animal.html', {'animal': animal})
+
+
+@officer_required
+def officer_delete_animal(request, pk):
+    """Delete an animal"""
+    animal = get_object_or_404(Animal, pk=pk)
+    animal.delete()
+    messages.success(request, 'Animal deleted successfully!')
+    return redirect('officer_manage_animals')
+
+
+# ================================
+# 14. PRESERVED ANIMAL MANAGEMENT (Officer)
+# ================================
+@officer_required
+def officer_manage_preserved_animals(request):
+    """View all preserved animals"""
+    preserved = PreservedAnimal.objects.select_related('animal').all()
+    return render(request, 'officer/preserved_animals.html', {'preserved_animals': preserved})
+
+
+@officer_required
+def officer_add_preserved_animal(request):
+    """Add an animal to the preserved list"""
+    if request.method == 'POST':
+        animal_id = request.POST.get('animal')
+        preservation_status = request.POST.get('preservation_status')
+        threat_level = request.POST.get('threat_level')
+        population_estimate = request.POST.get('population_estimate') or None
+        conservation_notes = request.POST.get('conservation_notes', '')
+
+        PreservedAnimal.objects.create(
+            animal_id=animal_id,
+            preservation_status=preservation_status,
+            threat_level=threat_level,
+            population_estimate=population_estimate,
+            conservation_notes=conservation_notes,
+        )
+        messages.success(request, 'Preserved animal added successfully!')
+        return redirect('officer_manage_preserved_animals')
+
+    animals = Animal.objects.all()
+    return render(request, 'officer/add_preserved_animal.html', {'animals': animals})
+
+
+@officer_required
+def officer_edit_preserved_animal(request, pk):
+    """Edit a preserved animal entry"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
+
+    if request.method == 'POST':
+        preserved.animal_id = request.POST.get('animal')
+        preserved.preservation_status = request.POST.get('preservation_status')
+        preserved.threat_level = request.POST.get('threat_level')
+        preserved.population_estimate = request.POST.get('population_estimate') or None
+        preserved.conservation_notes = request.POST.get('conservation_notes', '')
+        preserved.save()
+        messages.success(request, 'Preserved animal updated successfully!')
+        return redirect('officer_manage_preserved_animals')
+
+    animals = Animal.objects.all()
+    return render(request, 'officer/edit_preserved_animal.html', {'preserved': preserved, 'animals': animals})
+
+
+@officer_required
+def officer_delete_preserved_animal(request, pk):
+    """Delete a preserved animal entry"""
+    preserved = get_object_or_404(PreservedAnimal, pk=pk)
+    preserved.delete()
+    messages.success(request, 'Preserved animal removed successfully!')
+    return redirect('officer_manage_preserved_animals')
