@@ -9,7 +9,7 @@ import sys
 import os
 import django
 from PIL import Image
-
+from django.core.files.base import ContentFile
 # Setup Django
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flame_guard_project.settings')
@@ -19,7 +19,7 @@ from transformers import ViTImageProcessor, ViTForImageClassification
 import torch
 
 from admin_module.models import ForestStation, FireAlert, Notification, CustomUser, ForestDivision
-from officer_module.models import HumanIntrusionAlert, UserAlert
+from officer_module.models import HumanIntrusionAlert, UserAlert, AnimalAlert
 
 # Configuration
 DETECTION_INTERVAL = 10
@@ -227,15 +227,22 @@ class ViTDetector:
         
         return detections, top5_prob[0], top5_indices[0]
     
-    def create_fire_alert(self, confidence):
+    def create_fire_alert(self, confidence, frame=None):
         """Create fire alert"""
         severity = 'CRITICAL' if confidence > 0.9 else 'HIGH' if confidence > 0.75 else 'MEDIUM'
         location = f"{self.station.name}, {self.station.division.name}"
         
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"fire_{int(time.time())}.jpg")
+        
         alert = FireAlert.objects.create(
             station=self.station,
             severity=severity,
-            location_details=location
+            location_details=location,
+            image=image_content
         )
         
         print(f"\n  🔥 FIRE ALERT CREATED!")
@@ -248,21 +255,30 @@ class ViTDetector:
             f"Severity: {severity}, Conf: {confidence*100:.1f}%"
         )
     
-    def create_animal_alert(self, animals, confidence):
+    def create_animal_alert(self, animals, confidence, frame=None):
         """Create animal alert"""
         admin = CustomUser.objects.filter(user_type='ADMIN').first()
         if not admin:
             return
         
-        animal_list = ', '.join(set(animals))
+        animal_list = ', '.join(set(animals)).title()
         location = f"{self.station.name}, {self.station.division.name}"
+        severity = 'CRITICAL' if confidence > 0.9 else 'HIGH' if confidence > 0.75 else 'MEDIUM'
         
-        alert = UserAlert.objects.create(
-            officer=admin,
-            title=f"Wildlife: {animal_list.title()}",
-            message=f"At {location}. Conf: {confidence*100:.1f}%",
-            alert_type='WARNING',
-            location=location
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"animal_{int(time.time())}.jpg")
+        
+        alert = AnimalAlert.objects.create(
+            station=self.station,
+            animal_type=animal_list,
+            confidence_score=confidence,
+            severity=severity,
+            location_details=location,
+            officer_notified=True,
+            image=image_content
         )
         
         print(f"\n  🐅 ANIMAL ALERT!")
@@ -274,14 +290,21 @@ class ViTDetector:
             f"Location: {location}"
         )
     
-    def create_human_alert(self, confidence):
+    def create_human_alert(self, confidence, frame=None):
         """Create human intrusion alert"""
         location = f"{self.station.name}, {self.station.division.name}"
+        
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"human_{int(time.time())}.jpg")
         
         alert = HumanIntrusionAlert.objects.create(
             station=self.station,
             location_details=location,
-            officer_notified=True
+            officer_notified=True,
+            image=image_content
         )
         
         print(f"\n  🚶 HUMAN INTRUSION!")
@@ -360,10 +383,10 @@ class ViTDetector:
                     print(f"  🚶 Human: {'YES' if detections['human'] else 'NO'} ({detections['human_conf']*100:.1f}%)")
                     
                     if detections['fire']:
-                        self.create_fire_alert(detections['fire_conf'])
+                        self.create_fire_alert(detections['fire_conf'], frame)
                     
                     if detections['animals']:
-                        self.create_animal_alert(detections['animals'], detections['animal_conf'])
+                        self.create_animal_alert(detections['animals'], detections['animal_conf'], frame)
                     
                     # Temporal filtering for human detection
                     if detections['human']:
@@ -372,7 +395,7 @@ class ViTDetector:
                         print(f"  🚶 Human detected ({self.human_detection_count}/{HUMAN_DETECTION_THRESHOLD})")
                         
                         if self.human_detection_count >= HUMAN_DETECTION_THRESHOLD:
-                            self.create_human_alert(self.last_human_confidence)
+                            self.create_human_alert(self.last_human_confidence, frame)
                             self.human_detection_count = 0  # Reset after alert
                     else:
                         self.human_detection_count = 0  # Reset if not detected

@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from admin_module.models import ForestStation, FireAlert
-from officer_module.models import HumanIntrusionAlert
+from officer_module.models import HumanIntrusionAlert, AnimalAlert
 import sys
 import os
 
@@ -67,7 +67,8 @@ def detect_fire_api(request):
                 alert = FireAlert.objects.create(
                     station=station,
                     severity=severity,
-                    location_details=f"AI Detection (Confidence: {confidence}%)"
+                    location_details=f"AI Detection (Confidence: {confidence}%)",
+                    image=image_file
                 )
                 
                 result['alert_created'] = True
@@ -112,9 +113,43 @@ def detect_animal_api(request):
             }, status=400)
         
         image_file = request.FILES['image']
+        station_id = request.POST.get('station_id')
         
         # Run prediction
         result = predict.predict_animal(image_file)
+        
+        # If animal detected and station provided, create animal alert
+        if result.get('animal') and result.get('animal') != 'none' and station_id:
+            try:
+                station = ForestStation.objects.get(pk=station_id)
+                confidence = result.get('confidence', 0)
+                
+                # Determine severity based on confidence
+                if confidence > 90:
+                    severity = 'CRITICAL'
+                elif confidence > 75:
+                    severity = 'HIGH'
+                elif confidence > 60:
+                    severity = 'MEDIUM'
+                else:
+                    severity = 'LOW'
+                
+                # Create animal alert
+                alert = AnimalAlert.objects.create(
+                    station=station,
+                    animal_type=result.get('animal'),
+                    confidence_score=confidence / 100.0,
+                    severity=severity,
+                    location_details=f"AI Detection (Confidence: {confidence}%)",
+                    image=image_file
+                )
+                
+                result['alert_created'] = True
+                result['alert_id'] = alert.pk
+                
+            except ForestStation.DoesNotExist:
+                result['alert_created'] = False
+                result['error'] = 'Invalid station_id'
         
         return JsonResponse({
             'success': True,
@@ -165,7 +200,8 @@ def detect_human_api(request):
                 # Create intrusion alert
                 alert = HumanIntrusionAlert.objects.create(
                     station=station,
-                    location_details=f"AI Detection (Confidence: {result.get('confidence', 0)}%)"
+                    location_details=f"AI Detection (Confidence: {result.get('confidence', 0)}%)",
+                    image=image_file
                 )
                 
                 result['alert_created'] = True

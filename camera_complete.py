@@ -10,6 +10,7 @@ import sys
 import os
 import django
 from PIL import Image
+from django.core.files.base import ContentFile
 
 # Setup Django
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -303,15 +304,22 @@ class CompleteDetector:
         detected = max_confidence > CONFIDENCE_THRESHOLD
         return detected, max_confidence
     
-    def create_fire_alert(self, confidence):
+    def create_fire_alert(self, confidence, frame=None):
         """Create fire alert"""
         severity = 'CRITICAL' if confidence > 0.9 else 'HIGH' if confidence > 0.75 else 'MEDIUM'
         location = f"{self.station.name}, {self.station.division.name}"
         
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"fire_{int(time.time())}.jpg")
+        
         alert = FireAlert.objects.create(
             station=self.station,
             severity=severity,
-            location_details=location
+            location_details=location,
+            image=image_content
         )
         
         print(f"\n  🔥 FIRE ALERT CREATED!")
@@ -321,11 +329,17 @@ class CompleteDetector:
         print(f"     Location: {location}")
         print(f"     ℹ️  Officers can view this alert in their Fire Alerts page")
     
-    def create_animal_alert(self, animals, confidence):
+    def create_animal_alert(self, animals, confidence, frame=None):
         """Create animal alert"""
         animal_list = ', '.join(set(animals)).title()
         location = f"{self.station.name}, {self.station.division.name}"
         severity = 'CRITICAL' if confidence > 0.9 else 'HIGH' if confidence > 0.75 else 'MEDIUM'
+        
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"animal_{int(time.time())}.jpg")
         
         alert = AnimalAlert.objects.create(
             station=self.station,
@@ -333,7 +347,8 @@ class CompleteDetector:
             confidence_score=confidence,
             severity=severity,
             location_details=location,
-            officer_notified=True
+            officer_notified=True,
+            image=image_content
         )
         
         print(f"\n  🐅 ANIMAL ALERT CREATED!")
@@ -343,14 +358,21 @@ class CompleteDetector:
         print(f"     Location: {location}")
         print(f"     ℹ️  Officers can view this alert in their Animal Detection page")
     
-    def create_human_alert(self, confidence):
+    def create_human_alert(self, confidence, frame=None):
         """Create human intrusion alert"""
         location = f"{self.station.name}, {self.station.division.name}"
+        
+        image_content = None
+        if frame is not None:
+            ret, buf = cv2.imencode('.jpg', frame)
+            if ret:
+                image_content = ContentFile(buf.tobytes(), name=f"human_{int(time.time())}.jpg")
         
         alert = HumanIntrusionAlert.objects.create(
             station=self.station,
             location_details=location,
-            officer_notified=True
+            officer_notified=True,
+            image=image_content
         )
         
         print(f"\n  🚶 HUMAN INTRUSION ALERT!")
@@ -432,14 +454,14 @@ class CompleteDetector:
                         print(f"  🔥 Fire confirmed ({self.fire_detection_count}/{FIRE_DETECTION_THRESHOLD})")
                         
                         if self.fire_detection_count >= FIRE_DETECTION_THRESHOLD:
-                            self.create_fire_alert(self.last_fire_confidence)
+                            self.create_fire_alert(self.last_fire_confidence, frame)
                             self.fire_detection_count = 0
                     else:
                         self.fire_detection_count = 0
                     
                     # Animals (immediate alert)
                     if detections['animals']:
-                        self.create_animal_alert(detections['animals'], detections['animal_conf'])
+                        self.create_animal_alert(detections['animals'], detections['animal_conf'], frame)
                     
                     # Humans with temporal filtering
                     if detections['human']:
@@ -448,7 +470,7 @@ class CompleteDetector:
                         print(f"  🚶 Human confirmed ({self.human_detection_count}/{HUMAN_DETECTION_THRESHOLD})")
                         
                         if self.human_detection_count >= HUMAN_DETECTION_THRESHOLD:
-                            self.create_human_alert(self.last_human_confidence)
+                            self.create_human_alert(self.last_human_confidence, frame)
                             self.human_detection_count = 0
                     else:
                         self.human_detection_count = 0
