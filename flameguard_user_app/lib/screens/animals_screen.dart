@@ -11,13 +11,24 @@ class AnimalsScreen extends StatefulWidget {
 class _AnimalsScreenState extends State<AnimalsScreen> {
   List<dynamic> _animals = [];
   bool _isLoading = true;
+  bool _isDivisionsLoading = true;
   String _selectedDivision = 'All';
-  final List<String> _divisions = ['All', 'Division 1', 'Division 2', 'Division 3', 'Division 4', 'Division 5'];
+  List<String> _divisions = ['All'];
 
   @override
   void initState() {
     super.initState();
+    _fetchDivisions();
     _fetchAnimals();
+  }
+
+  Future<void> _fetchDivisions() async {
+    final data = await ApiService.getDivisions();
+    final names = data.map((d) => d['name'].toString()).toList();
+    setState(() {
+      _divisions = ['All', ...names];
+      _isDivisionsLoading = false;
+    });
   }
 
   Future<void> _fetchAnimals() async {
@@ -40,35 +51,48 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
           // Division filter
           Container(
             color: Colors.green.shade700,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: DropdownButtonFormField<String>(
-              value: _selectedDivision,
-              dropdownColor: Colors.green.shade700,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Filter by Division',
-                labelStyle: const TextStyle(color: Colors.white70),
-                prefixIcon: const Icon(Icons.filter_list, color: Colors.white70),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.white30),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.white30),
-                ),
-              ),
-              items: _divisions
-                  .map((d) => DropdownMenuItem(
-                        value: d,
-                        child: Text(d, style: const TextStyle(color: Colors.black87)),
-                      ))
-                  .toList(),
-              onChanged: (v) {
-                setState(() => _selectedDivision = v!);
-                _fetchAnimals();
-              },
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: _isDivisionsLoading
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  )
+                : DropdownButtonFormField<String>(
+                    value: _selectedDivision,
+                    dropdownColor: Colors.green.shade700,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Filter by Division',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(Icons.filter_list, color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.green.shade800,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    items: _divisions
+                        .map((d) => DropdownMenuItem(
+                              value: d,
+                              child: Text(d, style: const TextStyle(color: Colors.white)),
+                            ))
+                        .toList(),
+                    onChanged: (v) {
+                      setState(() => _selectedDivision = v!);
+                      _fetchAnimals();
+                    },
+                  ),
           ),
           Expanded(
             child: _isLoading

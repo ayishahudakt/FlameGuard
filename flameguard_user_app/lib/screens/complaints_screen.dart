@@ -160,6 +160,33 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
     );
   }
 
+  Widget _statusBadge(String status) {
+    switch (status.toUpperCase()) {
+      case 'IN_PROGRESS':
+        return _badge('In Progress', Colors.blue);
+      case 'RESOLVED':
+        return _badge('Resolved', Colors.teal);
+      case 'PENDING':
+      default:
+        return _badge('Pending', Colors.orange);
+    }
+  }
+
+  Widget _badge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   Widget _buildComplaintsList() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFFE65100)));
@@ -185,6 +212,7 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
         itemBuilder: (ctx, i) {
           final c = _complaints[i];
           final hasReply = c['reply'] != null && c['reply'].toString().isNotEmpty;
+          final status = c['status']?.toString() ?? 'PENDING';
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 3,
@@ -202,22 +230,13 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
                         child: Text(c['subject'] ?? '—',
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: hasReply ? Colors.green.shade50 : Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          hasReply ? 'Replied' : 'Pending',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: hasReply ? Colors.green : Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      _statusBadge(status),
                     ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    c['created_at'] ?? '',
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
                   Text(c['message'] ?? '—', style: const TextStyle(color: Colors.black87, fontSize: 13)),

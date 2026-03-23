@@ -37,13 +37,21 @@ def get_user_from_token(request):
 def user_login(request):
     try:
         data = json.loads(request.body)
-        username = data.get('username', '').strip()
+        login_input = data.get('username', '').strip()
         password = data.get('password', '').strip()
 
-        if not username or not password:
-            return JsonResponse({'error': 'Username and password are required.'}, status=400)
+        if not login_input or not password:
+            return JsonResponse({'error': 'Username/email and password are required.'}, status=400)
 
-        user = authenticate(username=username, password=password)
+        # If input looks like an email, find the actual username first
+        if '@' in login_input:
+            try:
+                matched_user = CustomUser.objects.get(email__iexact=login_input)
+                login_input = matched_user.username
+            except CustomUser.DoesNotExist:
+                return JsonResponse({'error': 'Invalid username or password.'}, status=401)
+
+        user = authenticate(username=login_input, password=password)
         if user is None:
             return JsonResponse({'error': 'Invalid username or password.'}, status=401)
 

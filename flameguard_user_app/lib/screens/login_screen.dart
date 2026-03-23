@@ -69,25 +69,90 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
-                  Image.asset(
-                    'assets/images/app_icon.png',
-                    width: 110,
-                    height: 110,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'FLAME Guard',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.5,
+                  // Logo — glowing circular badge
+                  Container(
+                    width: 130,
+                    height: 130,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      // Outer amber glow
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF8F00).withOpacity(0.55),
+                          blurRadius: 36,
+                          spreadRadius: 8,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        // Frosted white circle
+                        color: Colors.white.withOpacity(0.15),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.45),
+                          width: 2.5,
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(14),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.withOpacity(0.3),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Image.asset(
+                          'assets/images/app_icon.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
                   ),
-                  const Text(
-                    'User Login',
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  const SizedBox(height: 20),
+                  Text(
+                    'FLAME Guard',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'User Login',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 40),
 

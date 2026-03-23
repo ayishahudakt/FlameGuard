@@ -276,9 +276,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'Email is required';
-                              // This regex checks for a standard email format ending in .com
-                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$').hasMatch(v)) {
-                                return 'Enter a valid email ending with .com';
+                              // Accepts any valid email with @ and a dot in the domain (e.g. .com, .in, .edu.in)
+                              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(v)) {
+                                return 'Enter a valid email address';
                               }
                               return null;
                             },
