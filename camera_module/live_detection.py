@@ -58,25 +58,34 @@ class CameraMonitor:
         # 1. Fire Detection
         fire_result = predict.predict_fire(frame)
         if fire_result.get('detected') and fire_result.get('confidence', 0) > CONFIDENCE_THRESHOLD * 100:
-            self.create_fire_alert(fire_result['confidence'])
+            self.create_fire_alert(fire_result['confidence'], frame)
         
         # 2. Animal Detection
         animal_result = predict.predict_animal(frame)
         if animal_result.get('animal') != 'none' and animal_result.get('confidence', 0) > CONFIDENCE_THRESHOLD * 100:
-            self.create_animal_alert(animal_result['animal'], animal_result['confidence'])
+            self.create_animal_alert(animal_result['animal'], animal_result['confidence'], frame)
         
         # 3. Human Detection
         human_result = predict.predict_human(frame)
         if human_result.get('detected') and human_result.get('confidence', 0) > CONFIDENCE_THRESHOLD * 100:
-            self.create_human_alert(human_result['confidence'])
+            self.create_human_alert(human_result['confidence'], frame)
         
         # Display results
         print(f"\r🔥 Fire: {fire_result.get('confidence', 0):.1f}% | "
               f"🐅 Animal: {animal_result.get('animal', 'none')} ({animal_result.get('confidence', 0):.1f}%) | "
               f"🚶 Human: {human_result.get('confidence', 0):.1f}%", end='')
     
-    def create_fire_alert(self, confidence):
-        """Create fire alert and notify officers"""
+    def _frame_to_file(self, frame, prefix):
+        """Encode a cv2 frame as JPEG and return a Django ContentFile"""
+        import cv2
+        from django.core.files.base import ContentFile
+        _, buffer = cv2.imencode('.jpg', frame)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{prefix}_{timestamp}.jpg"
+        return ContentFile(buffer.tobytes(), name=filename)
+
+    def create_fire_alert(self, confidence, frame):
+        """Create fire alert with captured frame image"""
         # Determine severity
         if confidence > 90:
             severity = 'CRITICAL'
@@ -87,11 +96,13 @@ class CameraMonitor:
         else:
             severity = 'LOW'
         
-        # Create alert
+        # Save the fire frame image to the alert
+        image_file = self._frame_to_file(frame, 'fire')
         alert = FireAlert.objects.create(
             station=self.station,
             severity=severity,
-            location_details=f"AI Camera Detection (Confidence: {confidence:.1f}%)"
+            location_details=f"AI Camera Detection (Confidence: {confidence:.1f}%)",
+            image=image_file
         )
         
         print(f"\n🔥 FIRE ALERT CREATED! Severity: {severity}, Confidence: {confidence:.1f}%")
@@ -100,7 +111,7 @@ class CameraMonitor:
         self.notify_all(f"🔥 Fire Detected at {self.station.name}", 
                        f"Severity: {severity}, Confidence: {confidence:.1f}%")
     
-    def create_animal_alert(self, animal_type, confidence):
+    def create_animal_alert(self, animal_type, confidence, frame):
         """Create user alert for animal sighting"""
         alert = UserAlert.objects.create(
             officer=self.get_admin_user(),
@@ -116,12 +127,14 @@ class CameraMonitor:
         self.notify_all(f"🐅 {animal_type.title()} Detected", 
                        f"Location: {self.station.name}, Confidence: {confidence:.1f}%")
     
-    def create_human_alert(self, confidence):
-        """Create human intrusion alert"""
+    def create_human_alert(self, confidence, frame):
+        """Create human intrusion alert with captured frame image"""
+        image_file = self._frame_to_file(frame, 'human')
         alert = HumanIntrusionAlert.objects.create(
             station=self.station,
             location_details=f"AI Camera Detection (Confidence: {confidence:.1f}%)",
-            officer_notified=True
+            officer_notified=True,
+            image=image_file
         )
         
         print(f"\n🚶 HUMAN INTRUSION ALERT! Confidence: {confidence:.1f}%")

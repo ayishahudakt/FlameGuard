@@ -63,7 +63,8 @@ def detect_fire_api(request):
                 else:
                     severity = 'LOW'
                 
-                # Create fire alert
+                # Reset file pointer before saving so full image bytes are written
+                image_file.seek(0)
                 alert = FireAlert.objects.create(
                     station=station,
                     severity=severity,
