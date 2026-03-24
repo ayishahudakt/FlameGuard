@@ -186,6 +186,36 @@ def view_fire_alerts(request):
 # 6. USER ALERTS
 # ================================
 @officer_required
+def view_sent_alerts(request):
+    """View all alerts sent by the logged-in officer to public users"""
+    alerts = UserAlert.objects.filter(officer=request.user).order_by('-created_at')
+    return render(request, 'officer/sent_alerts.html', {'alerts': alerts})
+
+
+@officer_required
+def delete_sent_alert(request, pk):
+    """Delete a user alert sent by the logged-in officer"""
+    alert = get_object_or_404(UserAlert, pk=pk, officer=request.user)
+    alert.delete()
+    messages.success(request, 'Alert deleted successfully!')
+    return redirect('view_sent_alerts')
+
+@officer_required
+def toggle_sent_alert_status(request, pk):
+    """Toggle the active status of a user alert sent by the logged-in officer"""
+    alert = get_object_or_404(UserAlert, pk=pk, officer=request.user)
+    
+    # We only accept POST requests for state-changing actions
+    if request.method == 'POST':
+        alert.is_active = not alert.is_active
+        alert.save()
+        status_msg = "activated" if alert.is_active else "deactivated"
+        messages.success(request, f'Alert {status_msg} successfully.')
+        
+    return redirect('view_sent_alerts')
+
+
+@officer_required
 def send_user_alert(request):
     """Send alert to public users"""
     if request.method == 'POST':
@@ -536,6 +566,34 @@ def update_animal_alert_status(request, pk):
         return redirect('view_animal_alerts')
 
     return render(request, 'officer/update_animal_alert.html', {'alert': alert})
+
+
+@officer_required
+def delete_fire_alert(request, pk):
+    """Delete a fire alert (officer only)"""
+    alert = get_object_or_404(FireAlert, pk=pk)
+    alert.delete()
+    messages.success(request, 'Fire alert deleted successfully!')
+    return redirect('view_fire_alerts_officer')
+
+
+@officer_required
+def delete_animal_alert(request, pk):
+    """Delete an animal detection alert (officer only)"""
+    from .models import AnimalAlert
+    alert = get_object_or_404(AnimalAlert, pk=pk)
+    alert.delete()
+    messages.success(request, 'Animal alert deleted successfully!')
+    return redirect('view_animal_alerts')
+
+
+@officer_required
+def delete_human_intrusion(request, pk):
+    """Delete a human intrusion alert (officer only)"""
+    intrusion = get_object_or_404(HumanIntrusionAlert, pk=pk)
+    intrusion.delete()
+    messages.success(request, 'Human intrusion alert deleted successfully!')
+    return redirect('view_human_intrusion')
 
 
 # ================================

@@ -232,6 +232,33 @@
         box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     }
 
+    /* Delete Button */
+    .modern-delete-btn {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+        color: #dc2626;
+        border: 2px solid #dc2626;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        background-color: transparent;
+    }
+
+    .modern-delete-btn:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    }
+
     /* Empty State */
     .empty-state {
         text-align: center;
@@ -324,10 +351,25 @@
                     </div>
 
                     {% if intrusion.status == 'NEW' or intrusion.status == 'INVESTIGATING' %}
-                    <a href="{% url 'update_intrusion_status' intrusion.pk %}" class="modern-update-btn">
-                        <i class="bi bi-pencil-square"></i>
-                        Update Status
-                    </a>
+                    <div class="d-flex flex-wrap align-items-center" style="gap:0">
+                        <a href="{% url 'update_intrusion_status' intrusion.pk %}" class="modern-update-btn">
+                            <i class="bi bi-pencil-square"></i>
+                            Update Status
+                        </a>
+                        <button class="modern-delete-btn"
+                            onclick="confirmDelete('{% url 'delete_human_intrusion' intrusion.pk %}')">
+                            <i class="bi bi-trash-fill"></i>
+                            Delete
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="d-flex flex-wrap align-items-center" style="gap:0">
+                        <button class="modern-delete-btn"
+                            onclick="confirmDelete('{% url 'delete_human_intrusion' intrusion.pk %}')">
+                            <i class="bi bi-trash-fill"></i>
+                            Delete
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -343,4 +385,36 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header" style="background: var(--gradient-primary); color:white; border:none;">
+                <h5 class="modal-title" id="deleteConfirmLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <p class="mb-0" style="font-size:1rem;">Are you sure you want to <strong>permanently delete</strong> this intrusion alert? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center gap-2">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteAlertForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash-fill me-1"></i>Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(url) {
+        document.getElementById('deleteAlertForm').action = url;
+        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        modal.show();
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,452 @@
+{% extends 'officer/base.html' %}
+
+{% block title %}Sent Alerts History - FLAME Guard Officer{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --gradient-primary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+        --gradient-info:    linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        --gradient-danger:  linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        --gradient-closure: linear-gradient(135deg, #6b21a8 0%, #9333ea 100%);
+        --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
+        --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.14);
+    }
+
+    body { font-family: 'Roboto', sans-serif; }
+    h1,h2,h3,h4,h5,h6 { font-family: 'Inter', sans-serif; font-weight: 700; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-container { animation: fadeInUp 0.3s ease-out; }
+
+    /* --- Page Header --- */
+    .page-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    .page-header i { -webkit-text-fill-color: #3b82f6; }
+
+    /* --- Stats Strip --- */
+    .stats-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .stat-pill-total   { background: var(--gradient-primary); color: #fff; }
+    .stat-pill-active  { background: linear-gradient(135deg,#10b981,#14b8a6); color: #fff; }
+    .stat-pill-danger  { background: var(--gradient-danger);  color: #fff; }
+    .stat-pill-warning { background: var(--gradient-warning); color: #fff; }
+
+    /* --- Alert Card --- */
+    .alert-history-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.88) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.35);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.4s ease-out;
+        animation-fill-mode: both;
+    }
+    .alert-history-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-hover);
+    }
+    .alert-history-card:nth-child(1) { animation-delay: 0.05s; }
+    .alert-history-card:nth-child(2) { animation-delay: 0.10s; }
+    .alert-history-card:nth-child(3) { animation-delay: 0.15s; }
+    .alert-history-card:nth-child(4) { animation-delay: 0.20s; }
+    .alert-history-card:nth-child(5) { animation-delay: 0.25s; }
+    .alert-history-card:nth-child(6) { animation-delay: 0.30s; }
+
+    /* --- Card Header Band --- */
+    .card-band {
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .band-info    { background: var(--gradient-info); }
+    .band-warning { background: var(--gradient-warning); }
+    .band-danger  { background: var(--gradient-danger); }
+    .band-closure { background: var(--gradient-closure); }
+
+    .card-band-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .type-badge {
+        background: rgba(255,255,255,0.28);
+        color: white;
+        padding: 0.3rem 0.85rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(4px);
+        white-space: nowrap;
+    }
+
+    /* --- Card Body --- */
+    .card-body-custom { padding: 1.4rem 1.5rem; }
+
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        margin-bottom: 0.7rem;
+        font-size: 0.9rem;
+    }
+    .info-row i {
+        margin-top: 2px;
+        flex-shrink: 0;
+        color: #7c3aed;
+        font-size: 0.95rem;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #1e293b;
+        font-family: 'Inter', sans-serif;
+        white-space: nowrap;
+    }
+    .info-value { color: #475569; }
+
+    .message-box {
+        background: rgba(59,130,246,0.05);
+        border-left: 3px solid #7c3aed;
+        border-radius: 0 10px 10px 0;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        color: #334155;
+        margin-top: 0.4rem;
+        line-height: 1.55;
+    }
+
+    /* --- Status Badge --- */
+    .status-active   { background: linear-gradient(135deg,#10b981,#14b8a6); }
+    .status-inactive { background: linear-gradient(135deg,#64748b,#475569); }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    @keyframes pulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:.75; transform:scale(1.05); }
+    }
+    .status-active { animation: pulse 2.5s ease-in-out infinite; }
+
+    /* --- Send New Btn --- */
+    .btn-send-new {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.65rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-send-new:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(124,58,237,0.35);
+    }
+
+    /* --- Action Buttons --- */
+    .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        background: transparent;
+        font-family: 'Inter', sans-serif;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    .btn-toggle-active {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+        border-color: #10b981;
+    }
+    .btn-toggle-active:hover {
+        color: white;
+        background: linear-gradient(135deg, #10b981, #14b8a6);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    .btn-toggle-inactive {
+        color: #64748b;
+        background: rgba(100, 116, 139, 0.1);
+        border-color: #64748b;
+    }
+    .btn-toggle-inactive:hover {
+        color: white;
+        background: linear-gradient(135deg, #64748b, #475569);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25);
+    }
+    .btn-delete {
+        color: #dc2626;
+        background: rgba(220, 38, 38, 0.1);
+        border-color: #dc2626;
+    }
+    .btn-delete:hover {
+        color: white;
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    }
+
+    /* --- Empty State --- */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-soft);
+        color: #94a3b8;
+    }
+    .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.45; color: #7c3aed; }
+    .empty-state p { font-size: 1.05rem; margin: 0; }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+        .page-header { font-size: 1.5rem; }
+        .card-band   { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Header Row -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <h1 class="page-header mb-0">
+            <i class="bi bi-megaphone-fill"></i> Sent Alerts History
+        </h1>
+        <a href="{% url 'send_user_alert' %}" class="btn-send-new">
+            <i class="bi bi-plus-circle-fill"></i> Send New Alert
+        </a>
+    </div>
+
+    <!-- Stats Strip -->
+    {% if alerts %}
+    <div class="stats-strip">
+        <span class="stat-pill stat-pill-total">
+            <i class="bi bi-megaphone-fill"></i> {{ alerts|length }} Total
+        </span>
+        <span class="stat-pill stat-pill-active">
+            <i class="bi bi-broadcast"></i>
+            {{ alerts|length }} Sent
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Alerts Grid -->
+    <div class="row">
+        {% if alerts %}
+            {% for alert in alerts %}
+            <div class="col-md-6 mb-4">
+                <div class="alert-history-card">
+
+                    <!-- Coloured Band -->
+                    <div class="card-band
+                        {% if alert.alert_type == 'INFO' %}band-info
+                        {% elif alert.alert_type == 'WARNING' %}band-warning
+                        {% elif alert.alert_type == 'DANGER' %}band-danger
+                        {% else %}band-closure{% endif %}">
+                        <h3 class="card-band-title" title="{{ alert.title }}">{{ alert.title }}</h3>
+                        <span class="type-badge">{{ alert.get_alert_type_display }}</span>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body-custom">
+
+                        <!-- Sent At -->
+                        <div class="info-row">
+                            <i class="bi bi-clock-fill"></i>
+                            <span class="info-label">Sent:</span>
+                            <span class="info-value">{{ alert.created_at|date:"M d, Y \a\t h:i A" }}</span>
+                        </div>
+
+                        <!-- Location -->
+                        {% if alert.location %}
+                        <div class="info-row">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span class="info-label">Location:</span>
+                            <span class="info-value">{{ alert.location }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Status -->
+                        <div class="info-row">
+                            <i class="bi bi-circle-fill" style="font-size:0.6rem; margin-top:5px;
+                                color: {% if alert.is_active %}#10b981{% else %}#64748b{% endif %};"></i>
+                            <span class="info-label">Status:</span>
+                            <span class="status-pill {% if alert.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                {% if alert.is_active %}
+                                    <i class="bi bi-broadcast"></i> Active
+                                {% else %}
+                                    <i class="bi bi-slash-circle"></i> Inactive
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Expiry -->
+                        {% if alert.expires_at %}
+                        <div class="info-row">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span class="info-label">Expires:</span>
+                            <span class="info-value">{{ alert.expires_at|date:"M d, Y \a\t h:i A" }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Message -->
+                        <div class="mt-2">
+                            <div class="info-label mb-1"><i class="bi bi-chat-text-fill text-purple me-1" style="color:#7c3aed;"></i> Message</div>
+                            <div class="message-box">{{ alert.message }}</div>
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div class="card-actions">
+                            <form method="post" action="{% url 'toggle_sent_alert_status' alert.pk %}" style="flex: 1; display:flex;">
+                                {% csrf_token %}
+                                {% if alert.is_active %}
+                                    <button type="submit" class="action-btn btn-toggle-inactive" style="width: 100%;">
+                                        <i class="bi bi-slash-circle"></i> Deactivate
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="action-btn btn-toggle-active" style="width: 100%;">
+                                        <i class="bi bi-broadcast"></i> Activate
+                                    </button>
+                                {% endif %}
+                            </form>
+                            
+                            <button class="action-btn btn-delete" onclick="confirmDelete('{% url 'delete_sent_alert' alert.pk %}')">
+                                <i class="bi bi-trash-fill"></i> Delete
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-megaphone"></i>
+                <p class="fw-semibold mb-2">No alerts sent yet.</p>
+                <p class="mb-4" style="font-size:0.95rem;">You haven't sent any alerts to public users.</p>
+                <a href="{% url 'send_user_alert' %}" class="btn-send-new">
+                    <i class="bi bi-plus-circle-fill"></i> Send Your First Alert
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg,#dc2626,#ef4444); color:white; border:none;">
+                <h5 class="modal-title" id="deleteConfirmLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <p class="mb-0" style="font-size:1rem;">Are you sure you want to <strong>permanently delete</strong> this user alert? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center gap-2">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteAlertForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash-fill me-1"></i>Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmDelete(url) {
+        document.getElementById('deleteAlertForm').action = url;
+        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}
