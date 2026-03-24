@@ -7,6 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 import re
 import json
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.timezone import make_aware
+from datetime import datetime, time
 from django.db.models import Q
 from admin_module.models import (CustomUser, ForestStation, Complaint,
                                  Notification, Report, FireAlert,
@@ -107,8 +110,15 @@ def send_complaint(request):
 @officer_required
 def view_officer_complaints(request):
     """View all complaints and replies"""
-    complaints = Complaint.objects.filter(sender=request.user).order_by('-created_at')
-    return render(request, 'officer/view_complaints.html', {'complaints': complaints})
+    complaints = Complaint.objects.filter(sender=request.user)
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        complaints = complaints.filter(created_at__range=(start_t, end_t))
+    complaints = complaints.order_by('-created_at')
+    return render(request, 'officer/view_complaints.html', {'complaints': complaints, 'date_filter': date_filter})
 
 # ================================
 # 4. REPORT SUBMISSION
@@ -165,7 +175,14 @@ def view_fire_alerts(request):
                 debug_info['station_id'] = station.id
                 
                 # Query alerts
-                alerts = FireAlert.objects.filter(station=station).order_by('-detected_at')
+                alerts = FireAlert.objects.filter(station=station)
+                date_filter = request.GET.get('date_filter')
+                parsed_date = parse_date(date_filter) if date_filter else None
+                if parsed_date:
+                    start_t = make_aware(datetime.combine(parsed_date, time.min))
+                    end_t = make_aware(datetime.combine(parsed_date, time.max))
+                    alerts = alerts.filter(detected_at__range=(start_t, end_t))
+                alerts = alerts.order_by('-detected_at')
                 debug_info['alert_count'] = alerts.count()
                 
     except AttributeError as e:
@@ -175,10 +192,13 @@ def view_fire_alerts(request):
         error_message = f"Unexpected error: {str(e)}"
         debug_info['error'] = str(e)
     
+    date_filter = request.GET.get('date_filter') if 'request' in locals() else None
+    
     context = {
         'alerts': alerts,
         'error_message': error_message,
         'debug_info': debug_info,
+        'date_filter': date_filter,
     }
     return render(request, 'officer/fire_alerts.html', context)
 
@@ -188,8 +208,15 @@ def view_fire_alerts(request):
 @officer_required
 def view_sent_alerts(request):
     """View all alerts sent by the logged-in officer to public users"""
-    alerts = UserAlert.objects.filter(officer=request.user).order_by('-created_at')
-    return render(request, 'officer/sent_alerts.html', {'alerts': alerts})
+    alerts = UserAlert.objects.filter(officer=request.user)
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        alerts = alerts.filter(created_at__range=(start_t, end_t))
+    alerts = alerts.order_by('-created_at')
+    return render(request, 'officer/sent_alerts.html', {'alerts': alerts, 'date_filter': date_filter})
 
 
 @officer_required
@@ -267,7 +294,14 @@ def view_human_intrusion(request):
                 debug_info['station_id'] = station.id
                 
                 # Query alerts
-                intrusions = HumanIntrusionAlert.objects.filter(station=station).order_by('-detected_at')
+                intrusions = HumanIntrusionAlert.objects.filter(station=station)
+                date_filter = request.GET.get('date_filter')
+                parsed_date = parse_date(date_filter) if date_filter else None
+                if parsed_date:
+                    start_t = make_aware(datetime.combine(parsed_date, time.min))
+                    end_t = make_aware(datetime.combine(parsed_date, time.max))
+                    intrusions = intrusions.filter(detected_at__range=(start_t, end_t))
+                intrusions = intrusions.order_by('-detected_at')
                 debug_info['alert_count'] = intrusions.count()
                 
     except AttributeError as e:
@@ -277,10 +311,13 @@ def view_human_intrusion(request):
         error_message = f"Unexpected error: {str(e)}"
         debug_info['error'] = str(e)
     
+    date_filter = request.GET.get('date_filter') if 'request' in locals() else None
+
     context = {
         'intrusions': intrusions,
         'error_message': error_message,
         'debug_info': debug_info,
+        'date_filter': date_filter,
     }
     return render(request, 'officer/human_intrusion.html', context)
 
@@ -316,12 +353,20 @@ def view_notifications(request):
     notifications = Notification.objects.filter(
         to_officer=request.user,
         from_admin__user_type='ADMIN'  # Ensure from_admin is actually an admin
-    ).order_by('-created_at')
+    )
+    
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        notifications = notifications.filter(created_at__range=(start_t, end_t))
+    notifications = notifications.order_by('-created_at')
     
     # Mark as read
     notifications.filter(is_read=False).update(is_read=True)
     
-    return render(request, 'officer/notifications.html', {'notifications': notifications})
+    return render(request, 'officer/notifications.html', {'notifications': notifications, 'date_filter': date_filter})
 
 
 # ================================
@@ -357,7 +402,14 @@ def view_animal_alerts(request):
                 debug_info['station_id'] = station.id
                 
                 # Query alerts
-                alerts = AnimalAlert.objects.filter(station=station).order_by('-detected_at')
+                alerts = AnimalAlert.objects.filter(station=station)
+                date_filter = request.GET.get('date_filter')
+                parsed_date = parse_date(date_filter) if date_filter else None
+                if parsed_date:
+                    start_t = make_aware(datetime.combine(parsed_date, time.min))
+                    end_t = make_aware(datetime.combine(parsed_date, time.max))
+                    alerts = alerts.filter(detected_at__range=(start_t, end_t))
+                alerts = alerts.order_by('-detected_at')
                 debug_info['alert_count'] = alerts.count()
                 
     except AttributeError as e:
@@ -367,10 +419,13 @@ def view_animal_alerts(request):
         error_message = f"Unexpected error: {str(e)}"
         debug_info['error'] = str(e)
     
+    date_filter = request.GET.get('date_filter') if 'request' in locals() else None
+
     context = {
         'alerts': alerts,
         'error_message': error_message,
         'debug_info': debug_info,
+        'date_filter': date_filter,
     }
     return render(request, 'officer/animal_alerts.html', context)
 
@@ -380,8 +435,15 @@ def view_animal_alerts(request):
 @officer_required
 def view_my_reports(request):
     """View officer's own submitted reports"""
-    reports = Report.objects.filter(officer=request.user).order_by('-submitted_at')
-    return render(request, 'officer/my_reports.html', {'reports': reports})
+    reports = Report.objects.filter(officer=request.user)
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        reports = reports.filter(submitted_at__range=(start_t, end_t))
+    reports = reports.order_by('-submitted_at')
+    return render(request, 'officer/my_reports.html', {'reports': reports, 'date_filter': date_filter})
 
 # ================================
 # 11. FIRE ALERT STATUS UPDATE
@@ -613,16 +675,26 @@ def view_user_complaints(request):
             complaints = Complaint.objects.filter(
                 sender__user_type='USER',
                 sender__division=station.division
-            ).order_by('-created_at')
+            )
         else:
             error_message = "No station/division assigned to your profile."
+            complaints = Complaint.objects.none()
     except Exception:
         # Officer may not have a profile — show nothing
-        complaints = Complaint.objects.filter(sender__user_type='USER').order_by('-created_at')
+        complaints = Complaint.objects.filter(sender__user_type='USER')
+
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        complaints = complaints.filter(created_at__range=(start_t, end_t))
+    complaints = complaints.order_by('-created_at')
 
     return render(request, 'officer/user_complaints.html', {
         'complaints': complaints,
         'error_message': error_message,
+        'date_filter': date_filter,
     })
 
 

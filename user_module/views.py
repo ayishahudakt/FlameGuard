@@ -287,6 +287,24 @@ def complaints(request):
             return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_complaint(request, pk):
+    """Delete a specific complaint by the owner"""
+    user = get_user_from_token(request)
+    if not user:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+    
+    try:
+        complaint = Complaint.objects.get(pk=pk, sender=user)
+        complaint.delete()
+        return JsonResponse({'message': 'Complaint deleted successfully!'}, status=200)
+    except Complaint.DoesNotExist:
+        return JsonResponse({'error': 'Complaint not found or you are not the owner.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 # ============================================================
 # 7. ANIMALS (Division-wise)
 # GET /api/animals/  or  /api/animals/?division=Division+1

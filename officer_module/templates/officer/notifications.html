@@ -265,6 +265,16 @@
         <i class="bi bi-bell"></i> Notifications from Admin
     </h1>
 
+    <!-- Date Filter Form -->
+    <form method="GET" class="d-flex align-items-center mb-4 gap-2">
+        <label for="date_filter" class="fw-semibold text-secondary mb-0"><i class="bi bi-funnel"></i> Filter Date:</label>
+        <input type="date" name="date_filter" id="date_filter" class="form-control shadow-sm" style="max-width:200px; border-radius:10px;" value="{{ date_filter|default_if_none:'' }}">
+        <button type="submit" class="btn btn-primary rounded-pill px-3 shadow-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); border: none;"><i class="bi bi-search"></i> Apply</button>
+        {% if date_filter %}
+        <a href="?" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm"><i class="bi bi-x-circle"></i> Clear</a>
+        {% endif %}
+    </form>
+
     <!-- Notifications List -->
     <div>
         {% if notifications %}

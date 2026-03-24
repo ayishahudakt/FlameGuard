@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:intl/intl.dart';
 
 class AnimalAlertsScreen extends StatefulWidget {
   const AnimalAlertsScreen({super.key});
@@ -12,6 +13,34 @@ class _AnimalAlertsScreenState extends State<AnimalAlertsScreen> {
   List<dynamic> _alerts = [];
   bool _isLoading = true;
   String? _error;
+  DateTime? _selectedDate;
+
+  List<dynamic> get _filteredAlerts {
+    if (_selectedDate == null) return _alerts;
+    
+    // API returns dates like "19 Mar 2026, 05:10 PM"
+    final targetDateStr = DateFormat('dd MMM yyyy').format(_selectedDate!);
+    
+    return _alerts.where((alert) {
+      final dateStr = alert['detected_at'] ?? alert['created_at'];
+      if (dateStr == null) return false;
+      return dateStr.toString().startsWith(targetDateStr);
+    }).toList();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -45,6 +74,19 @@ class _AnimalAlertsScreenState extends State<AnimalAlertsScreen> {
         backgroundColor: Colors.brown,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          if (_selectedDate != null)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  _selectedDate = null;
+                });
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () => _selectDate(context),
+          ),
           IconButton(
               icon: const Icon(Icons.refresh, color: Colors.white),
               onPressed: _fetchAlerts),
@@ -54,14 +96,14 @@ class _AnimalAlertsScreenState extends State<AnimalAlertsScreen> {
           ? const Center(child: CircularProgressIndicator(color: Colors.brown))
           : _error != null
               ? _buildError()
-              : _alerts.isEmpty
+              : _filteredAlerts.isEmpty
                   ? _buildEmpty()
                   : RefreshIndicator(
                       onRefresh: _fetchAlerts,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _alerts.length,
-                        itemBuilder: (ctx, i) => _buildCard(_alerts[i]),
+                        itemCount: _filteredAlerts.length,
+                        itemBuilder: (ctx, i) => _buildCard(_filteredAlerts[i]),
                       ),
                     ),
     );

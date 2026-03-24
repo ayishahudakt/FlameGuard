@@ -10,6 +10,22 @@
     </a>
 </div>
 
+<!-- Date Filter Form -->
+<form method="GET" class="d-flex align-items-center mb-4 gap-2">
+    <label for="date_filter" class="fw-semibold text-secondary mb-0">
+        <i data-feather="filter" style="width: 16px;" class="me-1"></i> Filter Date:
+    </label>
+    <input type="date" name="date_filter" id="date_filter" class="form-control shadow-sm" style="max-width:200px; border-radius:10px;" value="{{ date_filter|default_if_none:'' }}">
+    <button type="submit" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
+        <i data-feather="search" style="width: 16px;" class="me-1"></i> Apply
+    </button>
+    {% if date_filter %}
+    <a href="?" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm d-flex align-items-center">
+        <i data-feather="x-circle" style="width: 16px;" class="me-1"></i> Clear
+    </a>
+    {% endif %}
+</form>
+
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -19,8 +35,8 @@
                         <th class="ps-4">Recipient</th>
                         <th>Notification Title</th>
                         <th>Message Preview</th>
-                        <th>Sent Time</th>
-                        <th class="text-end pe-4">Status</th>
+                        <th class="text-end">Status</th>
+                        <th class="text-center pe-4">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +55,7 @@
                             <i data-feather="calendar" class="me-1" style="width: 12px; vertical-align: middle;"></i>
                             {{ notification.created_at|date:"M d, Y H:i" }}
                         </td>
-                        <td class="text-end pe-4">
+                        <td class="text-end">
                             {% if notification.is_read %}
                             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
                                 <i data-feather="eye" class="me-1" style="width: 12px;"></i> Read
@@ -50,10 +66,16 @@
                             </span>
                             {% endif %}
                         </td>
+                        <td class="text-center pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-danger border-0 shadow-none px-2 py-1" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ notification.id }}" title="Delete">
+                                <i data-feather="trash-2" style="width: 16px;"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-5">
+                        <td colspan="6" class="text-center py-5">
                             <div class="stat-icon primary mx-auto mb-3"
                                 style="width: 64px; height: 64px; font-size: 1.5rem;">
                                 <i data-feather="mail"></i>
@@ -68,6 +90,35 @@
         </div>
     </div>
 </div>
+
+<!-- Modals Container -->
+{% for notification in notifications %}
+<div class="modal fade" id="deleteModal{{ notification.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="stat-icon danger mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem; background:#fee2e2; color:#ef4444; border-radius: 20px; display:flex; align-items:center; justify-content:center;">
+                        <i data-feather="alert-triangle"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-3">Remove Notification?</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to delete "<strong>{{ notification.title }}</strong>"?<br>
+                    This action cannot be undone.
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+                    <form action="{% url 'delete_sent_notification' notification.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 8px;">Delete Notification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <style>
     .bg-success-subtle {

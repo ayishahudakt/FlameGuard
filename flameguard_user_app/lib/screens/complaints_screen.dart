@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:intl/intl.dart';
 
 class ComplaintsScreen extends StatefulWidget {
   const ComplaintsScreen({super.key});
@@ -13,6 +14,34 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
   late TabController _tabController;
   List<dynamic> _complaints = [];
   bool _isLoading = true;
+  DateTime? _selectedDate;
+
+  List<dynamic> get _filteredComplaints {
+    if (_selectedDate == null) return _complaints;
+    
+    // API returns dates like "19 Mar 2026, 05:10 PM"
+    final targetDateStr = DateFormat('dd MMM yyyy').format(_selectedDate!);
+    
+    return _complaints.where((complaint) {
+      final dateStr = complaint['created_at'];
+      if (dateStr == null) return false;
+      return dateStr.toString().startsWith(targetDateStr);
+    }).toList();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
 
   // Form fields
   final _formKey = GlobalKey<FormState>();
@@ -66,6 +95,52 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
     }
   }
 
+  Future<void> _deleteComplaint(int id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_outline, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Delete Complaint'),
+          ],
+        ),
+        content: const Text('Are you sure you want to delete this complaint? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final result = await ApiService.deleteComplaint(id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['success'] ? 'Complaint deleted successfully!' : result['message'] ?? 'Error deleting'),
+          backgroundColor: result['success'] ? Colors.green : Colors.red,
+        ),
+      );
+      if (result['success']) {
+        _fetchComplaints();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +148,21 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
         title: const Text('Complaints', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFE65100),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (_selectedDate != null)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  _selectedDate = null;
+                });
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () => _selectDate(context),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -191,14 +281,14 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFFE65100)));
     }
-    if (_complaints.isEmpty) {
+    if (_filteredComplaints.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.inbox_outlined, size: 70, color: Colors.grey),
             SizedBox(height: 12),
-            Text('No complaints submitted yet.',
+            Text('No complaints match given criteria.',
                 style: TextStyle(fontSize: 16, color: Colors.grey)),
           ],
         ),
@@ -208,9 +298,9 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
       onRefresh: _fetchComplaints,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _complaints.length,
+        itemCount: _filteredComplaints.length,
         itemBuilder: (ctx, i) {
-          final c = _complaints[i];
+          final c = _filteredComplaints[i];
           final hasReply = c['reply'] != null && c['reply'].toString().isNotEmpty;
           final status = c['status']?.toString() ?? 'PENDING';
           return Card(
@@ -231,6 +321,14 @@ class _ComplaintsScreenState extends State<ComplaintsScreen>
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       ),
                       _statusBadge(status),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () => _deleteComplaint(c['id']),
+                        tooltip: 'Delete Complaint',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),

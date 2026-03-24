@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.timezone import make_aware
+from datetime import datetime, time
 from django.db.models import Count, Q
 from .models import (CustomUser, ForestDivision, ForestStation, Animal, 
                      PreservedAnimal, Complaint, Notification, Report, FireAlert)
@@ -288,7 +291,14 @@ def add_preserved_animal(request):
 def view_complaints(request):
     """View all complaints"""
     complaints = Complaint.objects.select_related('sender').all()
-    return render(request, 'admin_panel/complaints.html', {'complaints': complaints})
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        complaints = complaints.filter(created_at__range=(start_t, end_t))
+    complaints = complaints.order_by('-created_at')
+    return render(request, 'admin_panel/complaints.html', {'complaints': complaints, 'date_filter': date_filter})
 
 @admin_required
 def reply_complaint(request, pk):
@@ -330,10 +340,26 @@ def send_notification(request):
     return render(request, 'admin_panel/send_notification.html', {'officers': officers})
 
 @admin_required
+def delete_sent_notification(request, pk):
+    """Delete a sent notification"""
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        notification.delete()
+        messages.success(request, 'Notification deleted successfully!')
+    return redirect('view_sent_notifications')
+
+@admin_required
 def view_sent_notifications(request):
     """View history of notifications sent by Admin"""
     sent_notifications = Notification.objects.filter(from_admin=request.user)
-    return render(request, 'admin_panel/sent_notifications.html', {'notifications': sent_notifications})
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        sent_notifications = sent_notifications.filter(created_at__range=(start_t, end_t))
+    sent_notifications = sent_notifications.order_by('-created_at')
+    return render(request, 'admin_panel/sent_notifications.html', {'notifications': sent_notifications, 'date_filter': date_filter})
 
 # ================================
 # 10. VIEW REPORTS
@@ -342,7 +368,14 @@ def view_sent_notifications(request):
 def view_reports(request):
     """View all officer reports"""
     reports = Report.objects.select_related('officer', 'station').all()
-    return render(request, 'admin_panel/reports.html', {'reports': reports})
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        reports = reports.filter(submitted_at__range=(start_t, end_t))
+    reports = reports.order_by('-submitted_at')
+    return render(request, 'admin_panel/reports.html', {'reports': reports, 'date_filter': date_filter})
 
 # ================================
 # 11. VIEW FIRE ALERTS
@@ -351,21 +384,42 @@ def view_reports(request):
 def view_fire_alerts(request):
     """View all fire alerts"""
     alerts = FireAlert.objects.select_related('station').all()
-    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        alerts = alerts.filter(detected_at__range=(start_t, end_t))
+    alerts = alerts.order_by('-detected_at')
+    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts, 'date_filter': date_filter})
 
 @admin_required
 def view_animal_alerts(request):
     """View all animal detection alerts"""
     from officer_module.models import AnimalAlert
-    alerts = AnimalAlert.objects.select_related('station').all().order_by('-detected_at')
-    return render(request, 'admin_panel/animal_alerts.html', {'alerts': alerts})
+    alerts = AnimalAlert.objects.select_related('station').all()
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        alerts = alerts.filter(detected_at__range=(start_t, end_t))
+    alerts = alerts.order_by('-detected_at')
+    return render(request, 'admin_panel/animal_alerts.html', {'alerts': alerts, 'date_filter': date_filter})
 
 @admin_required
 def view_human_intrusion_alerts(request):
     """View all human intrusion alerts"""
     from officer_module.models import HumanIntrusionAlert
-    alerts = HumanIntrusionAlert.objects.select_related('station').all().order_by('-detected_at')
-    return render(request, 'admin_panel/human_intrusion_alerts.html', {'alerts': alerts})
+    alerts = HumanIntrusionAlert.objects.select_related('station').all()
+    date_filter = request.GET.get('date_filter')
+    parsed_date = parse_date(date_filter) if date_filter else None
+    if parsed_date:
+        start_t = make_aware(datetime.combine(parsed_date, time.min))
+        end_t = make_aware(datetime.combine(parsed_date, time.max))
+        alerts = alerts.filter(detected_at__range=(start_t, end_t))
+    alerts = alerts.order_by('-detected_at')
+    return render(request, 'admin_panel/human_intrusion_alerts.html', {'alerts': alerts, 'date_filter': date_filter})
 
 @admin_required
 def update_fire_alert(request, pk):
@@ -512,89 +566,89 @@ def allocate_officer(request, pk):
 # 8. COMPLAINT MANAGEMENT
 # ================================
 @admin_required
-def view_complaints(request):
-    """View all complaints"""
-    complaints = Complaint.objects.select_related('sender').all()
-    return render(request, 'admin_panel/complaints.html', {'complaints': complaints})
-
-@admin_required
-def reply_complaint(request, pk):
-    """Reply to a complaint"""
-    complaint = get_object_or_404(Complaint, pk=pk)
-    
-    if request.method == 'POST':
-        reply = request.POST.get('reply')
-        complaint.reply = reply
-        complaint.status = 'RESOLVED'
-        complaint.replied_at = timezone.now()
-        complaint.save()
-        messages.success(request, 'Reply sent successfully!')
-        return redirect('view_complaints')
-    
-    return render(request, 'admin_panel/reply_complaint.html', {'complaint': complaint})
-
-# ================================
-# 9. NOTIFICATION SYSTEM
-# ================================
-@admin_required
-def send_notification(request):
-    """Send notification to forest officers"""
-    if request.method == 'POST':
-        officer_id = request.POST.get('officer')
-        title = request.POST.get('title')
-        message = request.POST.get('message')
-        if not officer_id or not title or not message:
-            messages.error(request, 'All fields are required. Please select an officer and provide a title and message.')
-            return redirect('send_notification')
-
-        Notification.objects.create(
-            from_admin=request.user,
-            to_officer_id=officer_id,
-            title=title,
-            message=message
-        )
-        messages.success(request, 'Notification sent successfully!')
-        return redirect('admin_dashboard')
-    
-    officers = CustomUser.objects.filter(user_type='OFFICER')
-    return render(request, 'admin_panel/send_notification.html', {'officers': officers})
-
-# ================================
-# 10. VIEW REPORTS
-# ================================
-@admin_required
-def view_reports(request):
-    """View all officer reports"""
-    reports = Report.objects.select_related('officer', 'station').all()
-    return render(request, 'admin_panel/reports.html', {'reports': reports})
-
-# ================================
-# 11. VIEW FIRE ALERTS
-# ================================
-@admin_required
-def view_fire_alerts(request):
-    """View all fire alerts"""
-    alerts = FireAlert.objects.select_related('station').all()
-    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
-
-@admin_required
-def update_fire_alert(request, pk):
-    """Update fire alert status"""
-    alert = get_object_or_404(FireAlert, pk=pk)
-    
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        alert.status = status
-        if status == 'RESOLVED':
-            alert.resolved_at = timezone.now()
-        alert.save()
-        messages.success(request, 'Fire alert updated successfully!')
-        return redirect('view_fire_alerts')
-    
-    return render(request, 'admin_panel/update_fire_alert.html', {'alert': alert})
 
 
-@admin_required
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def edit_preserved_animal(request, pk):
     """Edit preserved animal"""
     preserved = get_object_or_404(PreservedAnimal, pk=pk)
@@ -624,113 +678,113 @@ def delete_preserved_animal(request, pk):
 # 8. COMPLAINT MANAGEMENT
 # ================================
 @admin_required
-def view_complaints(request):
-    """View all complaints"""
-    complaints = Complaint.objects.select_related('sender').all()
-    return render(request, 'admin_panel/complaints.html', {'complaints': complaints})
-
-@admin_required
-def reply_complaint(request, pk):
-    """Reply to a complaint"""
-    complaint = get_object_or_404(Complaint, pk=pk)
-    
-    if request.method == 'POST':
-        reply = request.POST.get('reply')
-        complaint.reply = reply
-        complaint.status = 'RESOLVED'
-        complaint.replied_at = timezone.now()
-        complaint.save()
-        messages.success(request, 'Reply sent successfully!')
-        return redirect('view_complaints')
-    
-    return render(request, 'admin_panel/reply_complaint.html', {'complaint': complaint})
-
-# ================================
-# 9. NOTIFICATION SYSTEM
-# ================================
-@admin_required
-def send_notification(request):
-    """Send notification to forest officers"""
-    if request.method == 'POST':
-        officer_id = request.POST.get('officer')
-        title = request.POST.get('title')
-        message = request.POST.get('message')
-        
-        Notification.objects.create(
-            from_admin=request.user,
-            to_officer_id=officer_id,
-            title=title,
-            message=message
-        )
-        messages.success(request, 'Notification sent successfully!')
-        return redirect('admin_dashboard')
-    
-    officers = CustomUser.objects.filter(user_type='OFFICER')
-    return render(request, 'admin_panel/send_notification.html', {'officers': officers})
-
-# ================================
-# 10. VIEW REPORTS
-# ================================
-@admin_required
-def view_reports(request):
-    """View all officer reports"""
-    reports = Report.objects.select_related('officer', 'station').all()
-    return render(request, 'admin_panel/reports.html', {'reports': reports})
-
-# ================================
-# 11. VIEW FIRE ALERTS
-# ================================
-@admin_required
-def view_fire_alerts(request):
-    """View all fire alerts"""
-    alerts = FireAlert.objects.select_related('station').all()
-    return render(request, 'admin_panel/fire_alerts.html', {'alerts': alerts})
-
-@admin_required
-def update_fire_alert(request, pk):
-    """Update fire alert status"""
-    alert = get_object_or_404(FireAlert, pk=pk)
-    
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        alert.status = status
-        if status == 'RESOLVED':
-            alert.resolved_at = timezone.now()
-        alert.save()
-        messages.success(request, 'Fire alert updated successfully!')
-        return redirect('view_fire_alerts')
-    
-    return render(request, 'admin_panel/update_fire_alert.html', {'alert': alert})
 
 
-@admin_required
-def edit_preserved_animal(request, pk):
-    """Edit preserved animal"""
-    preserved = get_object_or_404(PreservedAnimal, pk=pk)
-    
-    if request.method == 'POST':
-        preserved.animal_id = request.POST.get('animal')
-        preserved.preservation_status = request.POST.get('preservation_status')
-        preserved.threat_level = request.POST.get('threat_level')
-        preserved.population_estimate = request.POST.get('population_estimate') if request.POST.get('population_estimate') else None
-        preserved.conservation_notes = request.POST.get('conservation_notes')
-        preserved.save()
-        messages.success(request, 'Preserved animal updated successfully!')
-        return redirect('manage_preserved_animals')
-    
-    animals = Animal.objects.all()
-    return render(request, 'admin_panel/edit_preserved_animal.html', {'preserved': preserved, 'animals': animals})
-
-@admin_required
-def delete_preserved_animal(request, pk):
-    """Delete preserved animal"""
-    preserved = get_object_or_404(PreservedAnimal, pk=pk)
-    preserved.delete()
-    messages.success(request, 'Preserved animal removed successfully!')
-    return redirect('manage_preserved_animals')
 
 
-@admin_required
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def edit_officer(request, pk):
     """Edit forest officer"""
     officer = get_object_or_404(ForestOfficer, pk=pk)

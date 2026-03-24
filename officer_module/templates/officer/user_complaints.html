@@ -11,6 +11,16 @@
     </span>
 </div>
 
+<!-- Date Filter Form -->
+<form method="GET" class="d-flex align-items-center mb-4 gap-2">
+    <label for="date_filter" class="fw-semibold text-secondary mb-0"><i class="bi bi-funnel"></i> Filter Date:</label>
+    <input type="date" name="date_filter" id="date_filter" class="form-control shadow-sm" style="max-width:200px; border-radius:10px;" value="{{ date_filter|default_if_none:'' }}">
+    <button type="submit" class="btn btn-primary rounded-pill px-3 shadow-sm"><i class="bi bi-search"></i> Apply</button>
+    {% if date_filter %}
+    <a href="?" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm"><i class="bi bi-x-circle"></i> Clear</a>
+    {% endif %}
+</form>
+
 {% if error_message %}
 <div class="alert alert-warning">
     <i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}

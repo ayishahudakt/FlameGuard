@@ -204,68 +204,6 @@
         box-shadow: 0 6px 20px rgba(124,58,237,0.35);
     }
 
-    /* --- Action Buttons --- */
-    .card-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 1.25rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid rgba(0, 0, 0, 0.06);
-    }
-    .action-btn {
-        flex: 1;
-        padding: 0.5rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        background: transparent;
-        font-family: 'Inter', sans-serif;
-        border: 2px solid transparent;
-        cursor: pointer;
-    }
-    .btn-toggle-active {
-        color: #10b981;
-        background: rgba(16, 185, 129, 0.1);
-        border-color: #10b981;
-    }
-    .btn-toggle-active:hover {
-        color: white;
-        background: linear-gradient(135deg, #10b981, #14b8a6);
-        border-color: transparent;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-    }
-    .btn-toggle-inactive {
-        color: #64748b;
-        background: rgba(100, 116, 139, 0.1);
-        border-color: #64748b;
-    }
-    .btn-toggle-inactive:hover {
-        color: white;
-        background: linear-gradient(135deg, #64748b, #475569);
-        border-color: transparent;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25);
-    }
-    .btn-delete {
-        color: #dc2626;
-        background: rgba(220, 38, 38, 0.1);
-        border-color: #dc2626;
-    }
-    .btn-delete:hover {
-        color: white;
-        background: linear-gradient(135deg, #dc2626, #ef4444);
-        border-color: transparent;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
-    }
-
     /* --- Empty State --- */
     .empty-state {
         text-align: center;
@@ -284,6 +222,25 @@
         .page-header { font-size: 1.5rem; }
         .card-band   { flex-direction: column; align-items: flex-start; }
     }
+
+    .delete-alert-btn {
+        background: rgba(255, 255, 255, 0.22);
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0.5rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .delete-alert-btn:hover {
+        background: rgba(220, 38, 38, 0.85);
+        transform: scale(1.1);
+    }
 </style>
 {% endblock %}
 
@@ -299,6 +256,16 @@
             <i class="bi bi-plus-circle-fill"></i> Send New Alert
         </a>
     </div>
+
+    <!-- Date Filter Form -->
+    <form method="GET" class="d-flex align-items-center mb-4 gap-2">
+        <label for="date_filter" class="fw-semibold text-secondary mb-0"><i class="bi bi-funnel"></i> Filter Date:</label>
+        <input type="date" name="date_filter" id="date_filter" class="form-control shadow-sm" style="max-width:200px; border-radius:10px;" value="{{ date_filter|default_if_none:'' }}">
+        <button type="submit" class="btn btn-primary rounded-pill px-3 shadow-sm"><i class="bi bi-search"></i> Apply</button>
+        {% if date_filter %}
+        <a href="?" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm"><i class="bi bi-x-circle"></i> Clear</a>
+        {% endif %}
+    </form>
 
     <!-- Stats Strip -->
     {% if alerts %}
@@ -327,7 +294,13 @@
                         {% elif alert.alert_type == 'DANGER' %}band-danger
                         {% else %}band-closure{% endif %}">
                         <h3 class="card-band-title" title="{{ alert.title }}">{{ alert.title }}</h3>
-                        <span class="type-badge">{{ alert.get_alert_type_display }}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="type-badge">{{ alert.get_alert_type_display }}</span>
+                            <button type="button" class="delete-alert-btn" 
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ alert.id }}" title="Delete Alert">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Card Body -->
@@ -349,19 +322,6 @@
                         </div>
                         {% endif %}
 
-                        <!-- Status -->
-                        <div class="info-row">
-                            <i class="bi bi-circle-fill" style="font-size:0.6rem; margin-top:5px;
-                                color: {% if alert.is_active %}#10b981{% else %}#64748b{% endif %};"></i>
-                            <span class="info-label">Status:</span>
-                            <span class="status-pill {% if alert.is_active %}status-active{% else %}status-inactive{% endif %}">
-                                {% if alert.is_active %}
-                                    <i class="bi bi-broadcast"></i> Active
-                                {% else %}
-                                    <i class="bi bi-slash-circle"></i> Inactive
-                                {% endif %}
-                            </span>
-                        </div>
 
                         <!-- Expiry -->
                         {% if alert.expires_at %}
@@ -378,26 +338,27 @@
                             <div class="message-box">{{ alert.message }}</div>
                         </div>
 
-                        <!-- Card Actions -->
-                        <div class="card-actions">
-                            <form method="post" action="{% url 'toggle_sent_alert_status' alert.pk %}" style="flex: 1; display:flex;">
-                                {% csrf_token %}
-                                {% if alert.is_active %}
-                                    <button type="submit" class="action-btn btn-toggle-inactive" style="width: 100%;">
-                                        <i class="bi bi-slash-circle"></i> Deactivate
-                                    </button>
-                                {% else %}
-                                    <button type="submit" class="action-btn btn-toggle-active" style="width: 100%;">
-                                        <i class="bi bi-broadcast"></i> Activate
-                                    </button>
-                                {% endif %}
-                            </form>
-                            
-                            <button class="action-btn btn-delete" onclick="confirmDelete('{% url 'delete_sent_alert' alert.pk %}')">
-                                <i class="bi bi-trash-fill"></i> Delete
-                            </button>
-                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteModal{{ alert.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                        <div class="modal-body p-4 text-center">
+                            <div class="mb-4">
+                                <div class="stat-icon bg-danger-subtle text-danger mx-auto mb-3" style="width: 70px; height: 70px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </div>
+                                <h4 class="fw-bold text-dark mb-2">Delete Alert?</h4>
+                                <p class="text-muted">Are you sure you want to delete "<strong>{{ alert.title }}</strong>"? This action cannot be undone.</p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-light w-100 py-2 fw-semibold rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                <a href="{% url 'delete_sent_alert' alert.id %}" class="btn btn-danger w-100 py-2 fw-semibold rounded-pill">Delete Alert</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -417,36 +378,4 @@
     </div>
 
 </div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px; overflow:hidden;">
-            <div class="modal-header" style="background: linear-gradient(135deg,#dc2626,#ef4444); color:white; border:none;">
-                <h5 class="modal-title" id="deleteConfirmLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body py-4 text-center">
-                <p class="mb-0" style="font-size:1rem;">Are you sure you want to <strong>permanently delete</strong> this user alert? This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer border-0 justify-content-center gap-2">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteAlertForm" method="post" action="">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash-fill me-1"></i>Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    function confirmDelete(url) {
-        document.getElementById('deleteAlertForm').action = url;
-        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-        modal.show();
-    }
-</script>
 {% endblock %}

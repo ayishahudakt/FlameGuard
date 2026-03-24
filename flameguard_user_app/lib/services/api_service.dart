@@ -9,7 +9,7 @@ class ApiService {
   // e.g. http://192.168.1.5:8000
   // Find your IP by running "ipconfig" in PowerShell
   // ============================================================
-  static const String BASE_URL = 'http://172.20.10.2:8000';
+  static const String BASE_URL = 'http://192.168.1.9:8000';
 
 
   // Get the stored authentication token
@@ -210,6 +210,23 @@ class ApiService {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  // ---- DELETE COMPLAINT ----
+  static Future<Map<String, dynamic>> deleteComplaint(int id) async {
+    try {
+      final headers = await getHeaders();
+      final response = await http.delete(
+        Uri.parse('$BASE_URL/api/complaints/$id/'),
+        headers: headers,
+      );
+      if (response.statusCode == 200) {
+        return {'success': true};
+      }
+      return {'success': false, 'message': 'Failed to delete complaint'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error'};
     }
   }
 

@@ -8,6 +8,7 @@ urlpatterns = [
     path('animal-alerts/',  views.animal_alerts, name='animal-alerts'),
     path('notifications/',  views.notifications, name='notifications'),
     path('complaints/',     views.complaints,    name='complaints'),
+    path('complaints/<int:pk>/', views.delete_complaint, name='delete-complaint'),
     path('animals/',        views.animals,       name='animals'),
     path('contacts/',       views.contacts,      name='contacts'),
     path('divisions/',      views.divisions,     name='divisions'),

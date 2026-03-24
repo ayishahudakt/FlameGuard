@@ -32,7 +32,6 @@ urlpatterns = [
     path('user-alerts/send/', views.send_user_alert, name='send_user_alert'),
     path('user-alerts/sent/', views.view_sent_alerts, name='view_sent_alerts'),
     path('user-alerts/delete/<int:pk>/', views.delete_sent_alert, name='delete_sent_alert'),
-    path('user-alerts/toggle/<int:pk>/', views.toggle_sent_alert_status, name='toggle_sent_alert_status'),
     
     # Human Intrusion
     path('intrusions/', views.view_human_intrusion, name='view_human_intrusion'),

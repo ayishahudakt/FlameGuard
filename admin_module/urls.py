@@ -47,6 +47,7 @@ urlpatterns = [
     # Notifications
     path('notifications/send/', views.send_notification, name='send_notification'),
     path('notifications/sent/', views.view_sent_notifications, name='view_sent_notifications'),
+    path('notifications/delete/<int:pk>/', views.delete_sent_notification, name='delete_sent_notification'),
     
     # Reports
     path('reports/', views.view_reports, name='view_reports'),

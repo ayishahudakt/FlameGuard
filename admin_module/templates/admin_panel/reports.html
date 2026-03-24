@@ -4,12 +4,28 @@
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
-    <h1 class="h2">Field Reports</h1>
+    <h1 class="h2">Field Reports - TEST</h1>
     <div class="d-flex align-items-center">
         <span class="text-muted small me-2">Officer Submissions</span>
         <i data-feather="file-text" class="text-primary"></i>
     </div>
 </div>
+
+<!-- Date Filter Form -->
+<form method="GET" class="d-flex align-items-center mb-4 gap-2">
+    <label for="date_filter" class="fw-semibold text-secondary mb-0">
+        <i data-feather="filter" style="width: 16px;" class="me-1"></i> Filter Date:
+    </label>
+    <input type="date" name="date_filter" id="date_filter" class="form-control shadow-sm" style="max-width:200px; border-radius:10px;" value="{{ date_filter|default_if_none:'' }}">
+    <button type="submit" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center">
+        <i data-feather="search" style="width: 16px;" class="me-1"></i> Apply
+    </button>
+    {% if date_filter %}
+    <a href="?" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm d-flex align-items-center">
+        <i data-feather="x-circle" style="width: 16px;" class="me-1"></i> Clear
+    </a>
+    {% endif %}
+</form>
 
 <div class="reports-list">
     {% if reports %}
