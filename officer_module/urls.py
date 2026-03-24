@@ -21,17 +21,23 @@ urlpatterns = [
     path('fire-alerts/', views.view_fire_alerts, name='view_fire_alerts_officer'),
     path('fire-alerts/update/<int:pk>/', views.update_fire_alert_status, name='update_fire_alert_status'),
     path('fire-alerts/send-alert/<int:pk>/', views.send_fire_alert_to_users, name='send_fire_alert_to_users'),
+    path('fire-alerts/delete/<int:pk>/', views.delete_fire_alert, name='delete_fire_alert'),
     
     # Animal Detection
     path('animal-alerts/', views.view_animal_alerts, name='view_animal_alerts'),
     path('animal-alerts/update/<int:pk>/', views.update_animal_alert_status, name='update_animal_alert_status'),
+    path('animal-alerts/delete/<int:pk>/', views.delete_animal_alert, name='delete_animal_alert'),
     
     # User Alerts
     path('user-alerts/send/', views.send_user_alert, name='send_user_alert'),
+    path('user-alerts/sent/', views.view_sent_alerts, name='view_sent_alerts'),
+    path('user-alerts/delete/<int:pk>/', views.delete_sent_alert, name='delete_sent_alert'),
+    path('user-alerts/toggle/<int:pk>/', views.toggle_sent_alert_status, name='toggle_sent_alert_status'),
     
     # Human Intrusion
     path('intrusions/', views.view_human_intrusion, name='view_human_intrusion'),
     path('intrusions/update/<int:pk>/', views.update_intrusion_status, name='update_intrusion_status'),
+    path('intrusions/delete/<int:pk>/', views.delete_human_intrusion, name='delete_human_intrusion'),
     
     # Notifications
     path('notifications/', views.view_notifications, name='view_officer_notifications'),
