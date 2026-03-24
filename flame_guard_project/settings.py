@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,3 +146,14 @@ AUTH_USER_MODEL = 'admin_module.CustomUser'
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOW_CREDENTIALS = True
 
+JAZZMIN_SETTINGS = {
+    "site_title": "FlameGuard Admin",
+    "site_header": "FlameGuard",
+    "site_brand": "FlameGuard",
+    "welcome_sign": "Welcome to FlameGuard Admin 👋",
+    "copyright": "FlameGuard Project",
+
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]}
+    ],
+}
