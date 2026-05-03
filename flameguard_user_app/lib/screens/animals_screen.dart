@@ -87,9 +87,36 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    animal['name'] ?? 'Unknown Animal',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          animal['name'] ?? 'Unknown Animal',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: animal['is_dangerous'] == true ? Colors.orange.shade50 : Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: animal['is_dangerous'] == true ? Colors.orange.shade300 : Colors.green.shade300,
+                          ),
+                        ),
+                        child: Text(
+                          animal['is_dangerous'] == true ? 'DANGEROUS' : 'SAFE',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: animal['is_dangerous'] == true ? Colors.orange.shade800 : Colors.green.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   if (animal['division'] != null) ...[
                     const SizedBox(height: 4),
@@ -109,6 +136,38 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
                             fontSize: 11,
                             fontStyle: FontStyle.italic,
                             color: Colors.green.shade700)),
+                  ],
+                  if (animal['is_preserved'] == true) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.red.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.shield, size: 10, color: Colors.red.shade700),
+                              const SizedBox(width: 4),
+                              Text(
+                                (animal['preservation_status'] ?? 'PROTECTED').toString().toUpperCase(),
+                                style: TextStyle(fontSize: 10, color: Colors.red.shade700, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (animal['population_estimate'] != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.groups, size: 12, color: Colors.grey.shade600),
+                          const SizedBox(width: 2),
+                          Text('${animal['population_estimate']}', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                        ],
+                      ],
+                    ),
                   ],
                   const SizedBox(height: 6),
                   Text(

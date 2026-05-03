@@ -316,10 +316,11 @@ def animals(request):
     if not user:
         return JsonResponse({'error': 'Authentication required.'}, status=401)
 
-    queryset = Animal.objects.all()
+    queryset = Animal.objects.prefetch_related('preservation_info').all()
 
     data = []
     for animal in queryset:
+        preservation = animal.preservation_info.first()
         data.append({
             'id': animal.id,
             'name': animal.name,
@@ -327,6 +328,10 @@ def animals(request):
             'description': animal.description or '',
             'is_dangerous': animal.is_dangerous,
             'image': request.build_absolute_uri(animal.image.url) if animal.image else None,
+            'is_preserved': preservation is not None,
+            'preservation_status': preservation.get_preservation_status_display() if preservation else None,
+            'threat_level': preservation.get_threat_level_display() if preservation else None,
+            'population_estimate': preservation.population_estimate if preservation else None,
         })
 
     return JsonResponse(data, safe=False, status=200)

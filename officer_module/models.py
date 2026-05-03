@@ -1,4 +1,4 @@
-﻿from django.db import models
+from django.db import models
 
 class ForestOfficer(models.Model):
     """
@@ -148,6 +148,10 @@ class AnimalAlert(models.Model):
     
     def __str__(self):
         return f"{self.animal_type} at {self.station.name} - {self.detected_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    @property
+    def confidence_percentage(self):
+        return self.confidence_score * 100
     
     class Meta:
         ordering = ['-detected_at']
