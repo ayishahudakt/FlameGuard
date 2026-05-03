@@ -26,92 +26,164 @@
     {% endif %}
 </form>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">Recipient</th>
-                        <th>Notification Title</th>
-                        <th>Message Preview</th>
-                        <th class="text-end">Status</th>
-                        <th class="text-center pe-4">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for notification in notifications %}
-                    <tr class="align-middle">
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <img src="https://ui-avatars.com/api/?name={{ notification.to_officer.username }}&background=f1f5f9&color=475569"
-                                    alt="" class="rounded-circle me-2" width="32" height="32">
-                                <span class="fw-bold">{{ notification.to_officer.username }}</span>
-                            </div>
-                        </td>
-                        <td class="fw-medium text-dark">{{ notification.title }}</td>
-                        <td class="text-muted small">{{ notification.message|truncatechars:50 }}</td>
-                        <td class="text-muted small">
-                            <i data-feather="calendar" class="me-1" style="width: 12px; vertical-align: middle;"></i>
-                            {{ notification.created_at|date:"M d, Y H:i" }}
-                        </td>
-                        <td class="text-end">
-                            {% if notification.is_read %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                <i data-feather="eye" class="me-1" style="width: 12px;"></i> Read
+<!-- Notifications List -->
+{% if grouped_notifications %}
+<div class="notification-feed">
+    {% for group in grouped_notifications %}
+
+    {% if group.type == 'broadcast' %}
+    <!-- ====== BROADCAST GROUP CARD ====== -->
+    <div class="card border-0 shadow-sm mb-3 notification-card broadcast-card">
+        <div class="card-body p-0">
+            <!-- Broadcast Header -->
+            <div class="broadcast-header px-4 py-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="broadcast-icon me-3">
+                        <i data-feather="radio" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h6 class="fw-bold mb-0">{{ group.title }}</h6>
+                            <span class="badge bg-broadcast-badge">
+                                <i data-feather="users" style="width: 11px; height: 11px;" class="me-1"></i>
+                                Broadcast to {{ group.count }} officers
+                            </span>
+                        </div>
+                        <small class="text-muted d-flex align-items-center mt-1">
+                            <i data-feather="calendar" style="width: 12px; height: 12px;" class="me-1"></i>
+                            {{ group.created_at|date:"M d, Y H:i" }}
+                            <span class="mx-2">·</span>
+                            <span class="{% if group.all_read %}text-success{% else %}text-warning{% endif %}">
+                                {{ group.read_count }}/{{ group.count }} read
+                            </span>
+                        </small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-light border-0 toggle-recipients" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#broadcast_{{ forloop.counter }}"
+                    aria-expanded="false" title="Show recipients">
+                    <i data-feather="chevron-down" style="width: 16px;"></i>
+                </button>
+            </div>
+
+            <!-- Message Preview -->
+            <div class="px-4 py-3 border-top border-bottom" style="background: #fafbfc;">
+                <p class="mb-0 text-muted small">{{ group.message|truncatechars:150 }}</p>
+            </div>
+
+            <!-- Collapsible Recipients List -->
+            <div class="collapse" id="broadcast_{{ forloop.counter }}">
+                <div class="px-4 py-2" style="background: #f8f9fa;">
+                    <small class="text-muted fw-semibold text-uppercase d-block mb-2" style="letter-spacing: 0.5px; font-size: 0.68rem;">Recipients</small>
+                    {% for notif in group.recipients %}
+                    <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: #eee !important;">
+                        <div class="d-flex align-items-center">
+                            <img src="https://ui-avatars.com/api/?name={{ notif.to_officer.username }}&background=e8f5e9&color=2e7d32&size=28&font-size=0.45"
+                                alt="" class="rounded-circle me-2" width="28" height="28">
+                            <span class="small fw-medium">{{ notif.to_officer.username }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if notif.is_read %}
+                            <span class="badge bg-read-badge">
+                                <i data-feather="check-circle" style="width: 10px; height: 10px;" class="me-1"></i>Read
                             </span>
                             {% else %}
-                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
-                                <i data-feather="eye-off" class="me-1" style="width: 12px;"></i> Unread
+                            <span class="badge bg-unread-badge">
+                                <i data-feather="clock" style="width: 10px; height: 10px;" class="me-1"></i>Unread
                             </span>
                             {% endif %}
-                        </td>
-                        <td class="text-center pe-4">
-                            <button type="button" class="btn btn-sm btn-outline-danger border-0 shadow-none px-2 py-1" data-bs-toggle="modal"
-                                data-bs-target="#deleteModal{{ notification.id }}" title="Delete">
-                                <i data-feather="trash-2" style="width: 16px;"></i>
+                            <button type="button" class="btn btn-sm btn-outline-danger border-0 shadow-none p-1" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ notif.id }}" title="Delete">
+                                <i data-feather="trash-2" style="width: 13px; height: 13px;"></i>
                             </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="stat-icon primary mx-auto mb-3"
-                                style="width: 64px; height: 64px; font-size: 1.5rem;">
-                                <i data-feather="mail"></i>
-                            </div>
-                            <h6 class="fw-bold">No notifications sent yet</h6>
-                            <p class="text-muted small mb-0">Your dispatch history will appear here.</p>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
         </div>
     </div>
+
+    {% else %}
+    <!-- ====== SINGLE NOTIFICATION CARD ====== -->
+    {% with notif=group.notification %}
+    <div class="card border-0 shadow-sm mb-3 notification-card single-card">
+        <div class="card-body px-4 py-3">
+            <div class="d-flex align-items-start justify-content-between">
+                <div class="d-flex align-items-start flex-grow-1">
+                    <img src="https://ui-avatars.com/api/?name={{ notif.to_officer.username }}&background=f1f5f9&color=475569&size=40&font-size=0.4"
+                        alt="" class="rounded-circle me-3 mt-1" width="40" height="40">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <h6 class="fw-bold mb-0">{{ notif.title }}</h6>
+                            <span class="badge bg-single-badge">
+                                <i data-feather="user" style="width: 10px; height: 10px;" class="me-1"></i>
+                                {{ notif.to_officer.username }}
+                            </span>
+                            {% if notif.is_read %}
+                            <span class="badge bg-read-badge">
+                                <i data-feather="check-circle" style="width: 10px; height: 10px;" class="me-1"></i>Read
+                            </span>
+                            {% else %}
+                            <span class="badge bg-unread-badge">
+                                <i data-feather="clock" style="width: 10px; height: 10px;" class="me-1"></i>Unread
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-1">{{ notif.message|truncatechars:120 }}</p>
+                        <small class="text-muted d-flex align-items-center">
+                            <i data-feather="calendar" style="width: 12px; height: 12px;" class="me-1"></i>
+                            {{ notif.created_at|date:"M d, Y H:i" }}
+                        </small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 shadow-none p-1 ms-2" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal{{ notif.id }}" title="Delete">
+                    <i data-feather="trash-2" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    {% endfor %}
 </div>
 
-<!-- Modals Container -->
+{% else %}
+<!-- Empty State -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <div class="stat-icon primary mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;">
+            <i data-feather="mail"></i>
+        </div>
+        <h6 class="fw-bold">No notifications sent yet</h6>
+        <p class="text-muted small mb-0">Your dispatch history will appear here.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete Modals -->
 {% for notification in notifications %}
 <div class="modal fade" id="deleteModal{{ notification.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
             <div class="modal-body text-center p-5">
                 <div class="mb-4">
-                    <div class="stat-icon danger mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem; background:#fee2e2; color:#ef4444; border-radius: 20px; display:flex; align-items:center; justify-content:center;">
+                    <div style="width: 80px; height: 80px; font-size: 2.5rem; background:#fee2e2; color:#ef4444; border-radius: 20px; display:flex; align-items:center; justify-content:center; margin: 0 auto;">
                         <i data-feather="alert-triangle"></i>
                     </div>
                 </div>
                 <h4 class="fw-bold mb-3">Remove Notification?</h4>
                 <p class="text-muted mb-4">
-                    Are you sure you want to delete "<strong>{{ notification.title }}</strong>"?<br>
+                    Are you sure you want to delete "<strong>{{ notification.title }}</strong>" sent to <strong>{{ notification.to_officer.username }}</strong>?<br>
                     This action cannot be undone.
                 </p>
                 <div class="d-flex gap-2 justify-content-center">
                     <button type="button" class="btn btn-light px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
                     <form action="{% url 'delete_sent_notification' notification.id %}" method="POST" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 8px;">Delete Notification</button>
+                        <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 8px;">Delete</button>
                     </form>
                 </div>
             </div>
@@ -121,16 +193,77 @@
 {% endfor %}
 
 <style>
-    .bg-success-subtle {
-        background-color: #dcfce7 !important;
-        color: #166534 !important;
-        border-color: #bbf7d0 !important;
+    .notification-card {
+        border-radius: 16px !important;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
     }
 
-    .bg-warning-subtle {
-        background-color: #fff9db !important;
-        color: #856404 !important;
-        border-color: #ffeeba !important;
+    .notification-card:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+    }
+
+    /* Broadcast card styles */
+    .broadcast-header {
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    }
+
+    .broadcast-icon {
+        width: 36px;
+        height: 36px;
+        background: #dcfce7;
+        color: #16a34a;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-broadcast-badge {
+        background: #dcfce7 !important;
+        color: #15803d !important;
+        font-weight: 600;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    /* Single card styles */
+    .bg-single-badge {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        font-weight: 600;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    /* Status badges */
+    .bg-read-badge {
+        background: #dcfce7 !important;
+        color: #166534 !important;
+        font-weight: 500;
+        font-size: 0.68rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+    }
+
+    .bg-unread-badge {
+        background: #fef9c3 !important;
+        color: #854d0e !important;
+        font-weight: 500;
+        font-size: 0.68rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+    }
+
+    /* Toggle chevron animation */
+    .toggle-recipients[aria-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+
+    .toggle-recipients i {
+        transition: transform 0.2s ease;
     }
 </style>
 {% endblock %}

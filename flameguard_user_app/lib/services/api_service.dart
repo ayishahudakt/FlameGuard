@@ -9,7 +9,7 @@ class ApiService {
   // e.g. http://192.168.1.5:8000
   // Find your IP by running "ipconfig" in PowerShell
   // ============================================================
-  static const String BASE_URL = 'http://192.168.1.9:8000';
+  static const String BASE_URL = 'http://192.168.1.5:8000';
 
 
   // Get the stored authentication token

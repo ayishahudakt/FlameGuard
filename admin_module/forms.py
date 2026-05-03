@@ -157,7 +157,7 @@ class AnimalForm(forms.ModelForm):
         }
 
     def clean_name(self):
-        """Validate that Animal Name contains only alphabets and spaces."""
+        """Validate that Animal Name contains only alphabets and spaces and is unique."""
         name = self.cleaned_data.get('name')
         if name:
             name = name.strip()
@@ -165,15 +165,27 @@ class AnimalForm(forms.ModelForm):
                 raise forms.ValidationError('Only alphabets and spaces are allowed')
             if not name.replace(' ', ''):
                 raise forms.ValidationError('Animal name cannot be empty or contain only spaces')
+            
+            qs = Animal.objects.filter(name__iexact=name)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(f'An animal with the name "{name}" already exists.')
         return name
 
     def clean_scientific_name(self):
-        """Validate that Scientific Name contains only alphabets and spaces."""
+        """Validate that Scientific Name contains only alphabets and spaces and is unique."""
         scientific_name = self.cleaned_data.get('scientific_name')
         if scientific_name:
             scientific_name = scientific_name.strip()
             if not re.match(r'^[A-Za-z\s]+$', scientific_name):
                 raise forms.ValidationError('Only alphabets and spaces are allowed')
+            
+            qs = Animal.objects.filter(scientific_name__iexact=scientific_name)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(f'An animal with the scientific name "{scientific_name}" already exists.')
         return scientific_name
 
     def clean_description(self):

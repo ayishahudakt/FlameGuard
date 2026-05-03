@@ -26,20 +26,79 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-                <form method="post" class="needs-validation">
+                <form method="post" class="needs-validation" id="notificationForm">
                     {% csrf_token %}
 
+                    <!-- Send Mode Selection -->
                     <div class="mb-4">
-                        <label for="officer" class="form-label fw-bold text-dark small">Select Recipient Officer</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i data-feather="user"
-                                    style="width: 16px;"></i></span>
-                            <select class="form-select border-0 bg-light" id="officer" name="officer" required>
-                                <option value="" selected disabled>Choose an officer...</option>
-                                {% for officer in officers %}
-                                <option value="{{ officer.pk }}">{{ officer.username }} ({{ officer.email }})</option>
-                                {% endfor %}
-                            </select>
+                        <label class="form-label fw-bold text-dark small">Send To</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <div class="send-mode-option flex-fill">
+                                <input type="radio" class="btn-check" name="send_mode" id="mode_broadcast" value="broadcast" autocomplete="off">
+                                <label class="btn btn-outline-success w-100 py-3 d-flex align-items-center justify-content-center" for="mode_broadcast">
+                                    <i data-feather="radio" class="me-2" style="width: 16px;"></i> All Officers
+                                </label>
+                            </div>
+                            <div class="send-mode-option flex-fill">
+                                <input type="radio" class="btn-check" name="send_mode" id="mode_selected" value="selected" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary w-100 py-3 d-flex align-items-center justify-content-center" for="mode_selected">
+                                    <i data-feather="users" class="me-2" style="width: 16px;"></i> Select Officers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Officer Selection (shown only for 'selected' mode) -->
+                    <div class="mb-4" id="officerSelectSection">
+                        <label class="form-label fw-bold text-dark small">Select Recipient Officer(s)</label>
+                        
+                        <!-- Select All / Deselect All -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted" id="selectedCount">0 officer(s) selected</small>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" id="selectAllBtn">Select All</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">Deselect All</button>
+                            </div>
+                        </div>
+
+                        <!-- Officer Checkboxes -->
+                        <div class="officer-list bg-light p-3" style="border-radius: 12px; max-height: 280px; overflow-y: auto;">
+                            {% for profile in officer_profiles %}
+                            <div class="form-check officer-check-item py-2 px-3 mb-1" style="border-radius: 8px;">
+                                <input class="form-check-input officer-checkbox" type="checkbox" name="officers" value="{{ profile.user.pk }}" id="officer_{{ profile.user.pk }}">
+                                <label class="form-check-label d-flex align-items-center w-100" for="officer_{{ profile.user.pk }}" style="cursor: pointer;">
+                                    <div class="officer-avatar me-2">
+                                        <i data-feather="user" style="width: 14px; height: 14px;"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-semibold small">{{ profile.user.username }}</span>
+                                        <span class="text-muted small ms-1">({{ profile.user.email }})</span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i data-feather="map-pin" style="width: 11px; height: 11px; vertical-align: -1px;"></i>
+                                            {% if profile.station %}
+                                                {{ profile.station.name }} &mdash; {{ profile.station.division.name }}
+                                            {% else %}
+                                                <em>Not assigned to any station</em>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </label>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center mb-0 small">No officers registered yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Broadcast Info (shown only for 'broadcast' mode) -->
+                    <div class="mb-4 d-none" id="broadcastInfo">
+                        <div class="alert bg-success-subtle border-0 d-flex align-items-center p-3" style="border-radius: 12px;">
+                            <i data-feather="radio" class="text-success me-3" style="min-width: 20px;"></i>
+                            <div class="small">
+                                <span class="fw-bold text-success">Broadcast Mode</span>
+                                <p class="text-muted mb-0 mt-1">This notification will be sent to <strong>all {{ officer_profiles|length }} registered officer(s)</strong>.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -61,9 +120,9 @@
 
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <button type="submit"
+                            <button type="submit" id="submitBtn"
                                 class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
-                                <i data-feather="send" class="me-2" style="width: 18px;"></i> Notification
+                                <i data-feather="send" class="me-2" style="width: 18px;"></i> <span id="submitBtnText">Send Notification</span>
                             </button>
                         </div>
                         <div class="col-md-4">
@@ -75,22 +134,16 @@
                 </form>
             </div>
         </div>
-         <!--
-        <div class="alert bg-primary-bg mt-4 border-0 d-flex align-items-start p-4" style="border-radius: 16px;">
-            <i data-feather="info" class="text-primary-main me-3 mt-1" style="min-width: 20px;"></i>
-            <div class="small">
-                <p class="fw-bold text-primary-main mb-1">Broadcast Best Practices</p>
-                <p class="text-muted mb-0">Use clear subjects and action-oriented messages. Notifications are delivered
-                    to officers' mobile apps and web portals instantly.</p>
-            </div>
-        </div>
-        -->
     </div>
 </div>
 
 <style>
     .bg-primary-bg {
         background-color: var(--primary-bg) !important;
+    }
+
+    .bg-success-subtle {
+        background-color: #f0fdf4 !important;
     }
 
     .form-select,
@@ -116,5 +169,128 @@
         font-weight: 600;
         border-radius: 12px;
     }
+
+    /* Send mode toggle styles */
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--primary-main, #2e7d32) !important;
+        border-color: var(--primary-main, #2e7d32) !important;
+        color: #fff !important;
+    }
+
+    .btn-check:checked + .btn-outline-success {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #fff !important;
+    }
+
+    /* Officer checkbox list */
+    .officer-check-item {
+        transition: background-color 0.2s ease;
+    }
+
+    .officer-check-item:hover {
+        background-color: #e8f5e9;
+    }
+
+    .officer-check-item:has(.form-check-input:checked) {
+        background-color: #e8f5e9;
+    }
+
+    .officer-avatar {
+        width: 28px;
+        height: 28px;
+        background: #e0e0e0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .officer-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .officer-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .officer-list::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-main, #2e7d32);
+        border-color: var(--primary-main, #2e7d32);
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modeBroadcast = document.getElementById('mode_broadcast');
+        const modeSelected = document.getElementById('mode_selected');
+        const officerSelectSection = document.getElementById('officerSelectSection');
+        const broadcastInfo = document.getElementById('broadcastInfo');
+        const checkboxes = document.querySelectorAll('.officer-checkbox');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deselectAllBtn = document.getElementById('deselectAllBtn');
+        const selectedCount = document.getElementById('selectedCount');
+        const submitBtnText = document.getElementById('submitBtnText');
+        const form = document.getElementById('notificationForm');
+
+        // Toggle between broadcast and selected mode
+        function toggleMode() {
+            if (modeBroadcast.checked) {
+                officerSelectSection.classList.add('d-none');
+                broadcastInfo.classList.remove('d-none');
+                submitBtnText.textContent = 'Broadcast to All Officers';
+                // Uncheck all checkboxes & remove required
+                checkboxes.forEach(cb => { cb.checked = false; cb.removeAttribute('required'); });
+                updateCount();
+            } else {
+                officerSelectSection.classList.remove('d-none');
+                broadcastInfo.classList.add('d-none');
+                submitBtnText.textContent = 'Send Notification';
+            }
+            // Re-initialize feather icons for dynamically shown elements
+            if (typeof feather !== 'undefined') feather.replace();
+        }
+
+        modeBroadcast.addEventListener('change', toggleMode);
+        modeSelected.addEventListener('change', toggleMode);
+
+        // Select All / Deselect All
+        selectAllBtn.addEventListener('click', function () {
+            checkboxes.forEach(cb => cb.checked = true);
+            updateCount();
+        });
+
+        deselectAllBtn.addEventListener('click', function () {
+            checkboxes.forEach(cb => cb.checked = false);
+            updateCount();
+        });
+
+        // Update selected count
+        function updateCount() {
+            const count = document.querySelectorAll('.officer-checkbox:checked').length;
+            selectedCount.textContent = count + ' officer(s) selected';
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+
+        // Form validation
+        form.addEventListener('submit', function (e) {
+            if (modeSelected.checked) {
+                const checked = document.querySelectorAll('.officer-checkbox:checked');
+                if (checked.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one officer.');
+                }
+            }
+        });
+
+        // Initialize
+        toggleMode();
+    });
+</script>
 {% endblock %}

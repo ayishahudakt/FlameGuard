@@ -19,9 +19,9 @@
                     value="{{ animal.name }}" required>
             </div>
             <div class="mb-3">
-                <label class="form-label fw-semibold">Scientific Name</label>
+                <label class="form-label fw-semibold">Scientific Name <span class="text-danger">*</span></label>
                 <input type="text" name="scientific_name" class="form-control" style="border-radius:10px;"
-                    value="{{ animal.scientific_name|default:'' }}">
+                    value="{{ animal.scientific_name|default:'' }}" required>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-semibold">Description</label>

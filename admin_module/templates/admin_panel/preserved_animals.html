@@ -23,15 +23,31 @@
 
 <div class="card h-100 border-0 shadow-sm overflow-hidden preserved-card">
 
+<div class="position-relative" style="height:200px; background:#f8f9fa;">
+{% if preserved.animal.image %}
+<img src="{{ preserved.animal.image.url }}" class="w-100 h-100" style="object-fit:cover;" alt="{{ preserved.animal.name }}">
+{% else %}
+<div class="w-100 h-100 d-flex align-items-center justify-content-center">
+<i data-feather="image" style="width:48px; height:48px; color:#ccc;"></i>
+</div>
+{% endif %}
+<div class="position-absolute top-0 end-0 m-2">
+<span class="badge rounded-pill bg-white text-primary-main shadow-sm px-3 py-2" style="font-size: 0.75rem;">
+{{ preserved.get_preservation_status_display }}
+</span>
+</div>
+</div>
+
 <div class="card-header bg-primary-bg border-0 d-flex justify-content-between align-items-center py-3">
 
+<div>
 <h5 class="fw-bold mb-0 text-primary-main">
 {{ preserved.animal.name }}
 </h5>
-
-<span class="badge rounded-pill bg-white text-primary-main shadow-sm" style="font-size: 0.75rem;">
-{{ preserved.get_preservation_status_display }}
-</span>
+{% if preserved.animal.scientific_name %}
+<small class="text-muted fst-italic">{{ preserved.animal.scientific_name }}</small>
+{% endif %}
+</div>
 
 </div>
 

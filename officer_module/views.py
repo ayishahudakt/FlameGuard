@@ -741,6 +741,19 @@ def officer_add_animal(request):
         is_dangerous = request.POST.get('is_dangerous') == 'on'
         image = request.FILES.get('image')
 
+        # Validations
+        if not name or not scientific_name:
+            messages.error(request, 'Both animal name and scientific name are required.')
+            return render(request, 'officer/add_animal.html')
+
+        if Animal.objects.filter(name__iexact=name).exists():
+            messages.error(request, f'An animal with the name "{name}" already exists.')
+            return render(request, 'officer/add_animal.html')
+
+        if Animal.objects.filter(scientific_name__iexact=scientific_name).exists():
+            messages.error(request, f'An animal with the scientific name "{scientific_name}" already exists.')
+            return render(request, 'officer/add_animal.html')
+
         animal = Animal.objects.create(
             name=name,
             scientific_name=scientific_name,
@@ -762,8 +775,24 @@ def officer_edit_animal(request, pk):
     animal = get_object_or_404(Animal, pk=pk)
 
     if request.method == 'POST':
-        animal.name = request.POST.get('name', '').strip()
-        animal.scientific_name = request.POST.get('scientific_name', '').strip()
+        name = request.POST.get('name', '').strip()
+        scientific_name = request.POST.get('scientific_name', '').strip()
+        
+        # Validations
+        if not name or not scientific_name:
+            messages.error(request, 'Both animal name and scientific name are required.')
+            return render(request, 'officer/edit_animal.html', {'animal': animal})
+
+        if Animal.objects.filter(name__iexact=name).exclude(pk=pk).exists():
+            messages.error(request, f'An animal with the name "{name}" already exists.')
+            return render(request, 'officer/edit_animal.html', {'animal': animal})
+
+        if Animal.objects.filter(scientific_name__iexact=scientific_name).exclude(pk=pk).exists():
+            messages.error(request, f'An animal with the scientific name "{scientific_name}" already exists.')
+            return render(request, 'officer/edit_animal.html', {'animal': animal})
+
+        animal.name = name
+        animal.scientific_name = scientific_name
         animal.description = request.POST.get('description', '').strip()
         animal.is_dangerous = request.POST.get('is_dangerous') == 'on'
         if request.FILES.get('image'):

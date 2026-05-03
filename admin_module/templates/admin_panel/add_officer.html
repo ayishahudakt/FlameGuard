@@ -14,7 +14,7 @@
     <div class="col-xl-8 col-lg-10">
 
 
-        <form method="post" id="officerForm" class="needs-validation">
+        <form method="post" id="officerForm" class="needs-validation" autocomplete="off">
             {% csrf_token %}
 
             <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 20px;">
@@ -38,7 +38,7 @@
                                 <span class="input-group-text bg-light border-0"><i data-feather="at-sign"
                                         style="width: 16px;"></i></span>
                                 <input type="text" class="form-control border-0 bg-light" id="id_username"
-                                    name="username" pattern="[A-Za-z]+" required>
+                                    name="username" pattern="[A-Za-z]+" autocomplete="new-username" required>
                             </div>
                             {% if form.username.errors %}
                             <div class="invalid-feedback d-block mt-2">{{ form.username.errors.0 }}</div>
@@ -66,7 +66,7 @@
                                 <span class="input-group-text bg-light border-0"><i data-feather="lock"
                                         style="width: 16px;"></i></span>
                                 <input type="password" class="form-control border-0 bg-light" id="id_password"
-                                    name="password" minlength="8" required>
+                                    name="password" minlength="8" autocomplete="new-password" required>
                             </div>
                             {% if form.password.errors %}
                             <div class="invalid-feedback d-block mt-2">{{ form.password.errors.0 }}</div>
@@ -209,8 +209,15 @@
         const usernameInput = document.getElementById('id_username');
         const phoneInput = document.getElementById('id_phone_number');
         const emailInput = document.getElementById('id_email');
+        const passwordInput = document.getElementById('id_password');
         const submitBtn = document.querySelector('button[type="submit"]');
         const form = document.querySelector('form');
+
+        // Force-clear fields to prevent browser auto-fill
+        if (usernameInput) usernameInput.value = '';
+        if (passwordInput) passwordInput.value = '';
+        if (emailInput) emailInput.value = '';
+        if (phoneInput) phoneInput.value = '';
 
         // Apply classes to raw Django form widgets (fallback)
         const inputs = document.querySelectorAll('input, select');
@@ -258,25 +265,97 @@
 
             if (value && !isValid) {
                 emailInput.classList.add('is-invalid');
-                if (submitBtn) submitBtn.disabled = true;
                 return false;
             } else {
                 emailInput.classList.remove('is-invalid');
-                if (submitBtn) submitBtn.disabled = false;
                 return true;
             }
         }
 
         if (emailInput) {
             emailInput.addEventListener('input', validateEmail);
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    if (!validateEmail()) {
-                        e.preventDefault();
-                        alert('Please enter a valid email address with a proper domain (e.g. .com, .gov)');
-                    }
-                });
+        }
+
+        // ===== PASSWORD VALIDATION =====
+        // Create password requirements checklist
+        if (passwordInput) {
+            const helpText = passwordInput.closest('.col-md-6').querySelector('.form-text');
+            if (helpText) {
+                helpText.innerHTML = '';
+                const reqList = document.createElement('div');
+                reqList.className = 'password-requirements mt-2';
+                reqList.innerHTML = `
+                    <small class="d-block password-req" id="req-length"><i class="req-icon">✗</i> Minimum 8 characters</small>
+                    <small class="d-block password-req" id="req-upper"><i class="req-icon">✗</i> At least one uppercase letter (A-Z)</small>
+                    <small class="d-block password-req" id="req-lower"><i class="req-icon">✗</i> At least one lowercase letter (a-z)</small>
+                    <small class="d-block password-req" id="req-digit"><i class="req-icon">✗</i> At least one digit (0-9)</small>
+                    <small class="d-block password-req" id="req-special"><i class="req-icon">✗</i> At least one special character (!@#$%^&*)</small>
+                `;
+                helpText.parentNode.insertBefore(reqList, helpText.nextSibling);
             }
+
+            passwordInput.addEventListener('input', validatePassword);
+        }
+
+        function validatePassword() {
+            if (!passwordInput) return true;
+            const pwd = passwordInput.value;
+            let allPassed = true;
+
+            const checks = [
+                { id: 'req-length',  test: pwd.length >= 8 },
+                { id: 'req-upper',   test: /[A-Z]/.test(pwd) },
+                { id: 'req-lower',   test: /[a-z]/.test(pwd) },
+                { id: 'req-digit',   test: /[0-9]/.test(pwd) },
+                { id: 'req-special', test: /[!@#$%^&*]/.test(pwd) },
+            ];
+
+            checks.forEach(function(check) {
+                const el = document.getElementById(check.id);
+                if (!el) return;
+                if (check.test) {
+                    el.classList.add('text-success');
+                    el.classList.remove('text-danger');
+                    el.querySelector('.req-icon').textContent = '✓';
+                } else {
+                    el.classList.add('text-danger');
+                    el.classList.remove('text-success');
+                    el.querySelector('.req-icon').textContent = '✗';
+                    allPassed = false;
+                }
+            });
+
+            if (pwd.length > 0 && !allPassed) {
+                passwordInput.classList.add('is-invalid');
+                passwordInput.classList.remove('is-valid');
+            } else if (pwd.length > 0 && allPassed) {
+                passwordInput.classList.remove('is-invalid');
+                passwordInput.classList.add('is-valid');
+            } else {
+                passwordInput.classList.remove('is-invalid', 'is-valid');
+            }
+
+            return allPassed;
+        }
+
+        // Form submission validation
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                let valid = true;
+
+                if (!validateEmail()) {
+                    valid = false;
+                }
+
+                if (!validatePassword()) {
+                    valid = false;
+                    alert('Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a digit, and a special character (!@#$%^&*).');
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                }
+            });
         }
     });
 </script>

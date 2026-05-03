@@ -50,13 +50,14 @@ def detect_fire_enhanced(frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
     # Multiple fire color ranges for better accuracy
+    # INCREASED saturation and value minimums to prevent false positives from skin tones and animal fur
     fire_ranges = [
-        # Red-orange flames
-        (np.array([0, 100, 100]), np.array([20, 255, 255])),
+        # Red-orange flames (high saturation and brightness)
+        (np.array([0, 150, 150]), np.array([20, 255, 255])),
         # Orange-yellow flames
-        (np.array([20, 100, 100]), np.array([40, 255, 255])),
-        # Bright yellow flames
-        (np.array([40, 50, 200]), np.array([60, 255, 255]))
+        (np.array([20, 150, 150]), np.array([40, 255, 255])),
+        # Bright yellow flames (very high brightness)
+        (np.array([40, 100, 200]), np.array([60, 255, 255]))
     ]
     
     combined_mask = None

@@ -321,23 +321,48 @@ def reply_complaint(request, pk):
 # ================================
 @admin_required
 def send_notification(request):
-    """Send notification to forest officers"""
+    """Send notification to forest officers - supports broadcast, multi-select, and single"""
     if request.method == 'POST':
-        officer_id = request.POST.get('officer')
+        send_mode = request.POST.get('send_mode', 'selected')
         title = request.POST.get('title')
         message = request.POST.get('message')
-        
-        Notification.objects.create(
-            from_admin=request.user,
-            to_officer_id=officer_id,
-            title=title,
-            message=message
-        )
-        messages.success(request, 'Notification sent successfully!')
+
+        if send_mode == 'broadcast':
+            # Send to ALL officers
+            officers = CustomUser.objects.filter(user_type='OFFICER')
+            count = 0
+            for officer in officers:
+                Notification.objects.create(
+                    from_admin=request.user,
+                    to_officer=officer,
+                    title=title,
+                    message=message
+                )
+                count += 1
+            messages.success(request, f'Broadcast notification sent to {count} officer(s) successfully!')
+        else:
+            # Send to selected officer(s)
+            officer_ids = request.POST.getlist('officers')
+            if not officer_ids:
+                messages.error(request, 'Please select at least one officer.')
+                officer_profiles = ForestOfficer.objects.select_related('user', 'station', 'station__division').all()
+                return render(request, 'admin_panel/send_notification.html', {'officer_profiles': officer_profiles})
+
+            count = 0
+            for officer_id in officer_ids:
+                Notification.objects.create(
+                    from_admin=request.user,
+                    to_officer_id=officer_id,
+                    title=title,
+                    message=message
+                )
+                count += 1
+            messages.success(request, f'Notification sent to {count} officer(s) successfully!')
+
         return redirect('view_sent_notifications')
-    
-    officers = CustomUser.objects.filter(user_type='OFFICER')
-    return render(request, 'admin_panel/send_notification.html', {'officers': officers})
+
+    officer_profiles = ForestOfficer.objects.select_related('user', 'station', 'station__division').all()
+    return render(request, 'admin_panel/send_notification.html', {'officer_profiles': officer_profiles})
 
 @admin_required
 def delete_sent_notification(request, pk):
@@ -350,8 +375,8 @@ def delete_sent_notification(request, pk):
 
 @admin_required
 def view_sent_notifications(request):
-    """View history of notifications sent by Admin"""
-    sent_notifications = Notification.objects.filter(from_admin=request.user)
+    """View history of notifications sent by Admin — groups broadcast messages together"""
+    sent_notifications = Notification.objects.filter(from_admin=request.user).select_related('to_officer')
     date_filter = request.GET.get('date_filter')
     parsed_date = parse_date(date_filter) if date_filter else None
     if parsed_date:
@@ -359,7 +384,52 @@ def view_sent_notifications(request):
         end_t = make_aware(datetime.combine(parsed_date, time.max))
         sent_notifications = sent_notifications.filter(created_at__range=(start_t, end_t))
     sent_notifications = sent_notifications.order_by('-created_at')
-    return render(request, 'admin_panel/sent_notifications.html', {'notifications': sent_notifications, 'date_filter': date_filter})
+
+    # Group notifications: same title + message + created within 3 seconds = one group
+    grouped = []
+    used_ids = set()
+
+    notifications_list = list(sent_notifications)
+    for i, notif in enumerate(notifications_list):
+        if notif.id in used_ids:
+            continue
+
+        # Find siblings (same title, message, created within 3 seconds)
+        group_items = [notif]
+        used_ids.add(notif.id)
+
+        for j in range(i + 1, len(notifications_list)):
+            other = notifications_list[j]
+            if other.id in used_ids:
+                continue
+            if (other.title == notif.title and
+                other.message == notif.message and
+                abs((other.created_at - notif.created_at).total_seconds()) <= 3):
+                group_items.append(other)
+                used_ids.add(other.id)
+
+        if len(group_items) > 1:
+            grouped.append({
+                'type': 'broadcast',
+                'title': notif.title,
+                'message': notif.message,
+                'created_at': notif.created_at,
+                'recipients': group_items,
+                'count': len(group_items),
+                'all_read': all(n.is_read for n in group_items),
+                'read_count': sum(1 for n in group_items if n.is_read),
+            })
+        else:
+            grouped.append({
+                'type': 'single',
+                'notification': notif,
+            })
+
+    return render(request, 'admin_panel/sent_notifications.html', {
+        'grouped_notifications': grouped,
+        'notifications': notifications_list,  # kept for delete modals
+        'date_filter': date_filter
+    })
 
 # ================================
 # 10. VIEW REPORTS
@@ -504,48 +574,57 @@ def manage_officers(request):
 def add_officer(request):
     """Add new forest officer"""
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        email = request.POST.get('email', '').strip()
-        password = request.POST.get('password', '')
-        phone_number = request.POST.get('phone_number', '').strip()
-        station_id = request.POST.get('station')
-        designation = request.POST.get('designation', '').strip()
-        badge_number = request.POST.get('badge_number', '').strip()
+        form = ForestOfficerForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username'].strip()
+            email = form.cleaned_data['email'].strip()
+            password = form.cleaned_data['password']
+            phone_number = form.cleaned_data['phone_number'].strip()
+            station = form.cleaned_data.get('station')
+            designation = form.cleaned_data['designation'].strip()
+            badge_number = form.cleaned_data['badge_number'].strip()
 
-        errors = []
+            errors = []
 
-        # Uniqueness checks
-        if CustomUser.objects.filter(username__iexact=username).exists():
-            errors.append(f'Username "{username}" is already taken.')
-        if CustomUser.objects.filter(email__iexact=email).exists():
-            errors.append(f'Email "{email}" is already registered.')
-        if CustomUser.objects.filter(phone_number=phone_number).exists():
-            errors.append(f'Phone number "{phone_number}" is already in use.')
-        if badge_number and ForestOfficer.objects.filter(badge_number__iexact=badge_number).exists():
-            errors.append(f'Badge number "{badge_number}" is already assigned to another officer.')
+            # Uniqueness checks
+            if CustomUser.objects.filter(username__iexact=username).exists():
+                errors.append(f'Username "{username}" is already taken.')
+            if CustomUser.objects.filter(email__iexact=email).exists():
+                errors.append(f'Email "{email}" is already registered.')
+            if CustomUser.objects.filter(phone_number=phone_number).exists():
+                errors.append(f'Phone number "{phone_number}" is already in use.')
+            if badge_number and ForestOfficer.objects.filter(badge_number__iexact=badge_number).exists():
+                errors.append(f'Badge number "{badge_number}" is already assigned to another officer.')
 
-        if errors:
-            for error in errors:
-                messages.error(request, error)
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+            else:
+                user = CustomUser.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    user_type='OFFICER',
+                    phone_number=phone_number
+                )
+                ForestOfficer.objects.create(
+                    user=user,
+                    station_id=station.pk if station else None,
+                    designation=designation,
+                    badge_number=badge_number
+                )
+                messages.success(request, 'Forest Officer added successfully!')
+                return redirect('manage_officers')
         else:
-            user = CustomUser.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                user_type='OFFICER',
-                phone_number=phone_number
-            )
-            ForestOfficer.objects.create(
-                user=user,
-                station_id=station_id if station_id else None,
-                designation=designation,
-                badge_number=badge_number
-            )
-            messages.success(request, 'Forest Officer added successfully!')
-            return redirect('manage_officers')
+            # Show form validation errors (password, username, email, phone format)
+            for field, field_errors in form.errors.items():
+                for error in field_errors:
+                    messages.error(request, error)
+    else:
+        form = ForestOfficerForm()
 
     stations = ForestStation.objects.all()
-    return render(request, 'admin_panel/add_officer.html', {'stations': stations})
+    return render(request, 'admin_panel/add_officer.html', {'stations': stations, 'form': form})
 
 @admin_required
 def allocate_officer(request, pk):
