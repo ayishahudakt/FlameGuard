@@ -290,7 +290,7 @@ def add_preserved_animal(request):
 @admin_required
 def view_complaints(request):
     """View all complaints"""
-    complaints = Complaint.objects.select_related('sender').all()
+    complaints = Complaint.objects.select_related('sender').filter(sender__user_type='OFFICER')
     date_filter = request.GET.get('date_filter')
     parsed_date = parse_date(date_filter) if date_filter else None
     if parsed_date:
