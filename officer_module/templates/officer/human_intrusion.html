@@ -367,7 +367,7 @@
                             Update Status
                         </a>
                         <button class="modern-delete-btn"
-                            onclick="confirmDelete('{% url 'delete_human_intrusion' intrusion.pk %}')">
+                            onclick="confirmDelete(`{% url 'delete_human_intrusion' intrusion.pk %}`)">
                             <i class="bi bi-trash-fill"></i>
                             Delete
                         </button>
@@ -375,7 +375,7 @@
                     {% else %}
                     <div class="d-flex flex-wrap align-items-center" style="gap:0">
                         <button class="modern-delete-btn"
-                            onclick="confirmDelete('{% url 'delete_human_intrusion' intrusion.pk %}')">
+                            onclick="confirmDelete(`{% url 'delete_human_intrusion' intrusion.pk %}`)">
                             <i class="bi bi-trash-fill"></i>
                             Delete
                         </button>

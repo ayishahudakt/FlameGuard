@@ -447,7 +447,7 @@
                             Send Alert
                         </button>
                         <button class="modern-delete-btn"
-                            onclick="confirmDelete('{% url 'delete_fire_alert' alert.pk %}')">
+                            onclick="confirmDelete(`{% url 'delete_fire_alert' alert.pk %}`)">
                             <i class="bi bi-trash-fill"></i>
                             Delete
                         </button>
@@ -455,7 +455,7 @@
                     {% else %}
                     <div class="d-flex flex-wrap align-items-center" style="gap:0">
                         <button class="modern-delete-btn"
-                            onclick="confirmDelete('{% url 'delete_fire_alert' alert.pk %}')">
+                            onclick="confirmDelete(`{% url 'delete_fire_alert' alert.pk %}`)">
                             <i class="bi bi-trash-fill"></i>
                             Delete
                         </button>

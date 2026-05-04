@@ -255,3 +255,18 @@ class FireAlert(models.Model):
     
     class Meta:
         ordering = ['-detected_at']
+
+# ================================
+# 9. COMPLAINT PROXY MODELS
+# ================================
+class UserComplaint(Complaint):
+    class Meta:
+        proxy = True
+        verbose_name = 'User Complaint'
+        verbose_name_plural = 'User Complaints'
+
+class OfficerComplaint(Complaint):
+    class Meta:
+        proxy = True
+        verbose_name = 'Officer Complaint'
+        verbose_name_plural = 'Officer Complaints'
