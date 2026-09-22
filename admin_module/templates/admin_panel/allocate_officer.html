@@ -3,43 +3,113 @@
 {% block title %}Allocate Officer - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-geo-alt"></i> Allocate Officer to Station</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Officer Allocation</h1>
+    <a href="{% url 'manage_officers' %}" class="btn btn-outline-primary d-flex align-items-center">
+        <i data-feather="arrow-left" class="me-2" style="width: 16px;"></i> Back to List
+    </a>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <div class="mb-3">
-                    <h5>Officer: {{ officer.user.username }}</h5>
-                    <p class="text-muted">{{ officer.designation }}</p>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="station" class="form-label">Select Station *</label>
-                        <select class="form-select" id="station" name="station" required>
-                            <option value="">Choose a station</option>
-                            {% for station in stations %}
-                            <option value="{{ station.pk }}" {% if officer.station and officer.station.pk==station.pk
-                                %}selected{% endif %}>
-                                {{ station.name }} ({{ station.division.name }})
-                            </option>
-                            {% endfor %}
-                        </select>
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+            <div class="card-header bg-primary-bg border-0 py-4 px-4 text-center">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="avatar-circle primary mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ officer.user.username|slice:":1"|upper }}
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Allocate
-                        </button>
-                        <a href="{% url 'manage_officers' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
+                    <h4 class="fw-bold mb-0 text-primary-main">{{ officer.user.username|title }}</h4>
+                    <p class="text-muted small mb-0">{{ officer.designation }}</p>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" id="allocationForm" class="needs-validation">
+                    {% csrf_token %}
+
+                    <div class="mb-5">
+                        <label for="station" class="form-label fw-bold text-dark small">Target Forest Station*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="map-pin"
+                                    style="width: 16px;"></i></span>
+                            <select class="form-select" id="station" name="station" required>
+                                <option value="" selected disabled>Choose a station for deployment...</option>
+                                {% for station in stations %}
+                                <option value="{{ station.pk }}" {% if officer.station and
+                                    officer.station.pk==station.pk %}selected{% endif %}>
+                                    {{ station.name }} ({{ station.division.name }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <small class="form-text text-muted mt-2 d-block">The officer will be assigned to manage and
+                            monitor this specific post.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <button type="submit"
+                                class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
+                                <i data-feather="check-circle" class="me-2" style="width: 18px;"></i> Confirm Allocation
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'manage_officers' %}" class="btn btn-light w-100 py-3 text-muted">
+                                Cancel
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .avatar-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 700;
+    }
+
+    .avatar-circle.primary {
+        background-color: var(--primary-bg);
+        color: var(--primary-main);
+    }
+
+    .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: none !important;
+        background-color: #f8f9fa !important;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group>.form-select {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .btn-primary {
+        font-weight: 600;
+        border-radius: 12px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Feather Icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+</script>
 {% endblock %}

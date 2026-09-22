@@ -3,48 +3,190 @@
 {% block title %}Add Forest Station - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-plus-circle"></i> Add Forest Station</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Add Forest Station</h1>
+    <a href="{% url 'manage_stations' %}" class="btn btn-outline-primary d-flex align-items-center">
+        <i data-feather="arrow-left" class="me-2" style="width: 16px;"></i> Back to List
+    </a>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="post">
+<div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+            <div class="card-header bg-primary-bg border-0 py-4 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon primary me-3 mb-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                        <i data-feather="home"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-primary-main">Station Information</h4>
+                        <p class="text-muted small mb-0">Establish a new monitoring post</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" id="stationForm" class="needs-validation">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="division" class="form-label">Forest Division *</label>
-                        <select class="form-select" id="division" name="division" required>
-                            <option value="">Select Division</option>
-                            {% for div in divisions %}
-                            <option value="{{ div.pk }}">{{ div.name }}</option>
-                            {% endfor %}
-                        </select>
+
+                    <div class="mb-4">
+                        <label for="{{ form.division.id_for_label }}" class="form-label fw-bold text-dark small">Forest
+                            Division*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="grid"
+                                    style="width: 16px;"></i></span>
+                            {{ form.division }}
+                        </div>
+                        {% if form.division.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {% for error in form.division.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Station Name *</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+
+                    <div class="mb-4">
+                        <label for="{{ form.name.id_for_label }}" class="form-label fw-bold text-dark small">Station
+                            Name*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="type"
+                                    style="width: 16px;"></i></span>
+                            {{ form.name }}
+                        </div>
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {% for error in form.name.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted mt-2 d-block">Only alphabets and spaces (e.g., "Nilambur
+                            Station")</small>
                     </div>
-                    <div class="mb-3">
-                        <label for="contact_number" class="form-label">Contact Number *</label>
-                        <input type="text" class="form-control" id="contact_number" name="contact_number" required>
+
+                    <div class="mb-4">
+                        <label for="{{ form.contact_number.id_for_label }}"
+                            class="form-label fw-bold text-dark small">Contact Number*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="phone"
+                                    style="width: 16px;"></i></span>
+                            {{ form.contact_number }}
+                        </div>
+                        {% if form.contact_number.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {% for error in form.contact_number.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted mt-2 d-block">Must be exactly 10 digits</small>
                     </div>
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Address *</label>
-                        <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+
+                    <div class="mb-5">
+                        <label for="{{ form.address.id_for_label }}"
+                            class="form-label fw-bold text-dark small">Address*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 align-items-start pt-2">
+                                <i data-feather="map-pin" style="width: 16px;"></i>
+                            </span>
+                            {{ form.address }}
+                        </div>
+                        {% if form.address.errors %}
+                        <div class="invalid-feedback d-block mt-2">
+                            {% for error in form.address.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Save Station
-                        </button>
-                        <a href="{% url 'manage_stations' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <button type="submit"
+                                class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
+                                <i data-feather="check-circle" class="me-2" style="width: 18px;"></i> Save Station
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'manage_stations' %}" class="btn btn-light w-100 py-3 text-muted">
+                                Cancel
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: none !important;
+        background-color: #f8f9fa !important;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group>.form-control,
+    .input-group>.form-select {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .btn-primary {
+        font-weight: 600;
+        border-radius: 12px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+        const contactInput = document.getElementById('{{ form.contact_number.id_for_label }}');
+
+        // Apply Bootstrap classes to raw Django form widgets
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                if (input.tagName === 'SELECT') input.classList.add('form-select');
+                else input.classList.add('form-control');
+            }
+        });
+
+        // Validate Station Name (Alphabets + Spaces)
+        if (nameInput) {
+            nameInput.addEventListener('keydown', function (event) {
+                const char = event.key;
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', ' '];
+                const isAlphabet = /^[A-Za-z]$/.test(char);
+
+                if (!isAlphabet && !allowedKeys.includes(char)) {
+                    event.preventDefault();
+                    event.target.classList.add('is-invalid');
+                    setTimeout(() => event.target.classList.remove('is-invalid'), 500);
+                }
+            });
+        }
+
+        // Validate Contact Number (Numbers only, Max 10)
+        if (contactInput) {
+            contactInput.addEventListener('keydown', function (event) {
+                const char = event.key;
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'];
+                const isNumber = /^[0-9]$/.test(char);
+
+                if (!isNumber && !allowedKeys.includes(char)) {
+                    event.preventDefault();
+                    event.target.classList.add('is-invalid');
+                    setTimeout(() => event.target.classList.remove('is-invalid'), 500);
+                }
+            });
+
+            contactInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+        }
+    });
+</script>
 {% endblock %}

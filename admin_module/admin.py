@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, ForestDivision, ForestStation, Animal
+from .models import CustomUser, ForestDivision, ForestStation, Animal, Notification, Report, FireAlert, PreservedAnimal, UserComplaint, OfficerComplaint
 
 # ================================
 # 1. CUSTOM USER ADMIN
@@ -48,3 +48,63 @@ class AnimalAdmin(admin.ModelAdmin):
     list_display = ('name', 'scientific_name', 'is_dangerous')
     list_filter = ('is_dangerous',)
     search_fields = ('name', 'scientific_name')
+
+# ================================
+# PRESERVED ANIMAL ADMIN
+# ================================
+@admin.register(PreservedAnimal)
+class PreservedAnimalAdmin(admin.ModelAdmin):
+    list_display = ('animal', 'preservation_status', 'threat_level', 'population_estimate', 'last_updated')
+    list_filter = ('preservation_status', 'threat_level')
+    search_fields = ('animal__name',)
+
+# ================================
+# 5. USER COMPLAINT ADMIN
+# ================================
+@admin.register(UserComplaint)
+class UserComplaintAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'sender', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('subject', 'sender__username')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(sender__user_type='USER')
+
+# ================================
+# OFFICER COMPLAINT ADMIN
+# ================================
+@admin.register(OfficerComplaint)
+class OfficerComplaintAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'sender', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('subject', 'sender__username')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(sender__user_type='OFFICER')
+
+# ================================
+# 6. NOTIFICATION ADMIN
+# ================================
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'from_admin', 'to_officer', 'is_read', 'created_at')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('title', 'from_admin__username', 'to_officer__username')
+
+# ================================
+# 7. REPORT ADMIN
+# ================================
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('title', 'officer', 'station', 'submitted_at')
+    list_filter = ('station', 'submitted_at')
+    search_fields = ('title', 'officer__username')
+
+# ================================
+# 8. FIRE ALERT ADMIN
+# ================================
+@admin.register(FireAlert)
+class FireAlertAdmin(admin.ModelAdmin):
+    list_display = ('station', 'severity', 'status', 'detected_at')
+    list_filter = ('severity', 'status', 'detected_at')
+    search_fields = ('station__name',)

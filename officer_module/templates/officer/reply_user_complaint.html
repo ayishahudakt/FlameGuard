@@ -1,0 +1,98 @@
+{% extends 'officer/base.html' %}
+{% block title %}Reply to Complaint{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'view_user_complaints' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Back to User Complaints
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4" style="border-radius:16px;">
+    <div class="card-header py-3 px-4"
+        style="background:linear-gradient(135deg,#1e40af,#7c3aed); color:white; border-radius:16px 16px 0 0;">
+        <h5 class="mb-0">
+            <i class="bi bi-chat-dots me-2"></i> Complaint from {{ complaint.sender.username }}
+        </h5>
+        <small class="opacity-75">
+            {{ complaint.sender.division.name|default:"N/A" }} Division &bull;
+            {{ complaint.created_at|date:"d M Y, h:i A" }}
+        </small>
+    </div>
+
+    <div class="card-body px-4 pt-4">
+        <h5 class="fw-bold">{{ complaint.subject }}</h5>
+        <p class="text-muted">{{ complaint.message }}</p>
+
+        {% if complaint.reply %}
+        <div class="p-3 rounded mb-3" style="background:#f0f9ff; border-left:4px solid #1e40af;">
+            <small class="text-primary fw-bold">
+                <i class="bi bi-reply-fill me-1"></i> Previous Reply
+            </small>
+            <p class="mb-1 mt-1">{{ complaint.reply }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm border-0" style="border-radius:16px;">
+    <div class="card-header py-3 px-4 bg-light border-0">
+        <h6 class="mb-0 fw-bold">
+            <i class="bi bi-reply me-2 text-primary"></i> Write Reply
+        </h6>
+    </div>
+
+    <div class="card-body px-4 py-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Status</label>
+                <select name="status" class="form-select" style="border-radius:10px;">
+
+                    <option value="IN_PROGRESS"
+                    {% if complaint.status == 'IN_PROGRESS' %} selected {% endif %}>
+                    In Progress
+                    </option>
+
+                    <option value="RESOLVED"
+                    {% if complaint.status == 'RESOLVED' %} selected {% endif %}>
+                    Resolved
+                    </option>
+
+                    <option value="PENDING"
+                    {% if complaint.status == 'PENDING' %} selected {% endif %}>
+                    Pending
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    Reply Message <span class="text-danger">*</span>
+                </label>
+
+                <textarea name="reply"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Write your reply here..."
+                    style="border-radius:10px;"
+                    required>{{ complaint.reply|default:'' }}</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-send me-2"></i> Send Reply
+                </button>
+
+                <a href="{% url 'view_user_complaints' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

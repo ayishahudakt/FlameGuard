@@ -92,3 +92,15 @@ dmypy.json
 # Backup files
 *.bak
 *.tmp
+
+# Large Model Files
+*.weights
+*.pt
+*.h5
+*.onnx
+
+# YOLO Training Logs
+runs/
+
+# User Uploads
+media/

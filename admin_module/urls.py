@@ -30,10 +30,14 @@ urlpatterns = [
     # Preserved Animal Management
     path('preserved-animals/', views.manage_preserved_animals, name='manage_preserved_animals'),
     path('preserved-animals/add/', views.add_preserved_animal, name='add_preserved_animal'),
+    path('preserved-animals/edit/<int:pk>/', views.edit_preserved_animal, name='edit_preserved_animal'),
+    path('preserved-animals/delete/<int:pk>/', views.delete_preserved_animal, name='delete_preserved_animal'),
     
     # Forest Officer Management
     path('officers/', views.manage_officers, name='manage_officers'),
     path('officers/add/', views.add_officer, name='add_officer'),
+    path('officers/edit/<int:pk>/', views.edit_officer, name='edit_officer'),
+    path('officers/delete/<int:pk>/', views.delete_officer, name='delete_officer'),
     path('officers/allocate/<int:pk>/', views.allocate_officer, name='allocate_officer'),
     
     # Complaint Management
@@ -42,6 +46,8 @@ urlpatterns = [
     
     # Notifications
     path('notifications/send/', views.send_notification, name='send_notification'),
+    path('notifications/sent/', views.view_sent_notifications, name='view_sent_notifications'),
+    path('notifications/delete/<int:pk>/', views.delete_sent_notification, name='delete_sent_notification'),
     
     # Reports
     path('reports/', views.view_reports, name='view_reports'),
@@ -49,4 +55,10 @@ urlpatterns = [
     # Fire Alerts
     path('fire-alerts/', views.view_fire_alerts, name='view_fire_alerts'),
     path('fire-alerts/update/<int:pk>/', views.update_fire_alert, name='update_fire_alert'),
+    
+    # Animal Alerts
+    path('animal-alerts/', views.view_animal_alerts, name='admin_view_animal_alerts'),
+    
+    # Human Intrusion Alerts
+    path('human-intrusion-alerts/', views.view_human_intrusion_alerts, name='admin_view_human_intrusion_alerts'),
 ]

@@ -3,51 +3,129 @@
 {% block title %}Update Fire Alert - FLAME Guard Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="bi bi-pencil"></i> Update Fire Alert Status</h1>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Incident Management</h1>
+    <a href="{% url 'view_fire_alerts' %}" class="btn btn-outline-primary d-flex align-items-center">
+        <i data-feather="arrow-left" class="me-2" style="width: 16px;"></i> Back to Alerts
+    </a>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-3">
-            <div class="card-header">Alert Details</div>
-            <div class="card-body">
-                <p><strong>Station:</strong> {{ alert.station.name }}</p>
-                <p><strong>Severity:</strong> <span class="badge bg-danger">{{ alert.get_severity_display }}</span></p>
-                <p><strong>Detected:</strong> {{ alert.detected_at|date:"M d, Y H:i" }}</p>
-                <p><strong>Current Status:</strong> <span class="badge bg-warning">{{ alert.get_status_display }}</span>
-                </p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Update Status</div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="status" class="form-label">New Status *</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="ACTIVE" {% if alert.status=='ACTIVE' %}selected{% endif %}>Active</option>
-                            <option value="INVESTIGATING" {% if alert.status=='INVESTIGATING' %}selected{% endif %}>
-                                Investigating</option>
-                            <option value="CONTAINED" {% if alert.status=='CONTAINED' %}selected{% endif %}>Contained
-                            </option>
-                            <option value="RESOLVED" {% if alert.status=='RESOLVED' %}selected{% endif %}>Resolved
-                            </option>
-                        </select>
+<div class="row justify-content-center">
+    <div class="col-xl-6 col-lg-8">
+        <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+            <div class="card-header bg-primary-bg border-0 py-4 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon danger me-3 mb-0" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                        <i data-feather="alert-circle"></i>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Update Status
-                        </button>
-                        <a href="{% url 'view_fire_alerts' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-primary-main">Update Alert Status</h4>
+                        <p class="text-muted small mb-0">Incident at {{ alert.station.name }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <!-- Alert Summary Box -->
+                <div class="mb-5 p-4 bg-light rounded-4 border-start border-4 border-danger">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <p class="small text-muted mb-1">Severity Level</p>
+                            <span class="badge bg-danger px-3 py-2 rounded-pill">{{ alert.get_severity_display }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="small text-muted mb-1">Current Status</p>
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">{{ alert.get_status_display
+                                }}</span>
+                        </div>
+                        <div class="col-12">
+                            <p class="small text-muted mb-1">Detection Time</p>
+                            <div class="d-flex align-items-center text-dark fw-medium">
+                                <i data-feather="clock" class="me-2 text-muted" style="width: 14px;"></i>
+                                {{ alert.detected_at|date:"F d, Y | H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" id="updateStatusForm" class="needs-validation">
+                    {% csrf_token %}
+
+                    <div class="mb-5">
+                        <label for="status" class="form-label fw-bold text-dark small">New Operational Status*</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i data-feather="activity"
+                                    style="width: 16px;"></i></span>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="ACTIVE" {% if alert.status=='ACTIVE' %}selected{% endif %}>🟢 Active
+                                    (Ongoing)</option>
+                                <option value="INVESTIGATING" {% if alert.status=='INVESTIGATING' %}selected{% endif %}>
+                                    🟡 Investigating (On-site)</option>
+                                <option value="CONTAINED" {% if alert.status=='CONTAINED' %}selected{% endif %}>🟠
+                                    Contained (Under Control)</option>
+                                <option value="RESOLVED" {% if alert.status=='RESOLVED' %}selected{% endif %}>⚪ Resolved
+                                    (Finished)</option>
+                            </select>
+                        </div>
+                        <small class="form-text text-muted mt-2 d-block">Updating the status will notify relevant
+                            authorities and update the monitoring dashboard.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <button type="submit"
+                                class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center shadow-sm">
+                                <i data-feather="check-circle" class="me-2" style="width: 18px;"></i> Save Changes
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'view_fire_alerts' %}" class="btn btn-light w-100 py-3 text-muted">
+                                Cancel
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-primary-bg {
+        background-color: var(--primary-bg) !important;
+    }
+
+    .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: none !important;
+        background-color: #f8f9fa !important;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+    }
+
+    .input-group>.form-select {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .btn-primary {
+        font-weight: 600;
+        border-radius: 12px;
+    }
+
+    .stat-icon.danger {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+</script>
 {% endblock %}
